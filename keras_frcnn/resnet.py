@@ -247,6 +247,14 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
     out_regr = TimeDistributed(Dense(4 * (nb_classes-1), activation='linear', kernel_initializer='zero'), name='dense_regress_{}'.format(nb_classes))(out)
     return [out_class, out_regr]
 
+def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=False):
+    pooling_regions = 14
+    input_shape = (num_rois, 14, 14, 1024)
+    out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
+
+
+
+
 def fg_location(base_layers,num_anchors):
     x = Convolution2D(512, (3, 3), padding='same', activation='relu', kernel_initializer='normal', name='rpn_conv1')(base_layers)
     x_class = Convolution2D(num_anchors, (1, 1), activation='sigmoid', kernel_initializer='uniform', name='rpn_out_class')(x)
@@ -255,6 +263,7 @@ def fg_location(base_layers,num_anchors):
     return [x_class, x_regr, base_layers]
 
  #[img_input, head_roi, legs_roi, wings_roi, back_roi, belly_roi, breast_roi, tail_roi]
+
 def fg_classifier(base_layers, input_rois, num_rois = 7, nb_classes = 10, trainable=False):
     pooling_regions = 14
     input_shape = (num_rois, 14, 14, 1024)

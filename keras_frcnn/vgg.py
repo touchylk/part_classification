@@ -11,7 +11,7 @@ import warnings
 
 from keras.models import Model
 from keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, Dropout
-from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D, TimeDistributed
+from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D, TimeDistributed,Lambda,merge
 from keras.engine.topology import get_source_inputs
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
@@ -119,6 +119,41 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
     out_regr = TimeDistributed(Dense(4 * (nb_classes-1), activation='linear', kernel_initializer='zero'), name='dense_regress_{}'.format(nb_classes))(out)
 
     return [out_class, out_regr]
+
+
+def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=False):
+    pooling_regions = 7
+    input_shape = (num_rois, 7, 7, 512)
+    out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
+    partout_0 = part_net(out_roi_pool,0,nb_classes)
+    partout_1 = part_net(out_roi_pool, 1, nb_classes)
+    partout_2 = part_net(out_roi_pool, 2, nb_classes)
+    partout_3 = part_net(out_roi_pool, 3, nb_classes)
+    partout_4 = part_net(out_roi_pool, 4, nb_classes)
+    partout_5 = part_net(out_roi_pool, 5, nb_classes)
+    partout_6 = part_net(out_roi_pool, 6, nb_classes)
+    holy_classout = merge([partout_0,partout_1,partout_2,partout_3,partout_4,partout_5,partout_6],mode='concat')
+    return
+
+
+
+
+
+def part_net(out_roi_pool,i,nb_classes = 200):
+    x = Lambda(slice,output_shape=None,arguments={'i':i})(out_roi_pool)
+    out = Flatten(name='flatten'+str(i))(x)
+    out = Dense(4096,activation='relu',name='fc1'+str(i))(out)
+    out = Dropout(0.5)(out)
+    out = Dense(4096,activation='relu',name='fc2'+str(i))(out)
+    out = TimeDistributed(Dropout(0.5))(out)
+    out_class = Dense(nb_classes,activation='softmax',kernel_initializer='zero',name='dense_class'+str(i))(out)
+    return out_class
+
+
+def slice(x,i):
+    return x[:,i,:,:,:]
+
+
 
 
 def fg_classifier(base_layers, input_rois0,input_rois1, input_rois2, input_rois3, input_rois4, input_rois5, input_rois6, nb_classes=200, trainable=True):
