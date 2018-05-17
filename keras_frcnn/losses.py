@@ -83,3 +83,5 @@ def bird_loss(num):
 	return bird_loss1
 def part_loss(bird_true,y_pred):
 	return 1  * bird_true[0] * categorical_crossentropy(bird_true[1:], y_pred)
+
+

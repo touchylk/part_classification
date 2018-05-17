@@ -125,6 +125,7 @@ def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=
     pooling_regions = 7
     input_shape = (num_rois, 7, 7, 512)
     out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
+
     partout_0 = part_net(out_roi_pool,0,nb_classes)
     partout_1 = part_net(out_roi_pool, 1, nb_classes)
     partout_2 = part_net(out_roi_pool, 2, nb_classes)
@@ -132,8 +133,8 @@ def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=
     partout_4 = part_net(out_roi_pool, 4, nb_classes)
     partout_5 = part_net(out_roi_pool, 5, nb_classes)
     partout_6 = part_net(out_roi_pool, 6, nb_classes)
-    holy_classout = merge([partout_0,partout_1,partout_2,partout_3,partout_4,partout_5,partout_6],mode='concat')
-    return
+    #holy_classout = merge.concatenate([partout_0,partout_1,partout_2,partout_3,partout_4,partout_5,partout_6],mode='concat')
+    return [partout_0,partout_1,partout_2,partout_3,partout_4,partout_5,partout_6]
 
 
 
@@ -145,7 +146,7 @@ def part_net(out_roi_pool,i,nb_classes = 200):
     out = Dense(4096,activation='relu',name='fc1'+str(i))(out)
     out = Dropout(0.5)(out)
     out = Dense(4096,activation='relu',name='fc2'+str(i))(out)
-    out = TimeDistributed(Dropout(0.5))(out)
+    out = Dropout(0.5)(out)
     out_class = Dense(nb_classes,activation='softmax',kernel_initializer='zero',name='dense_class'+str(i))(out)
     return out_class
 
