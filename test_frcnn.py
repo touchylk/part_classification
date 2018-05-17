@@ -136,13 +136,13 @@ model_classifier = Model([feature_map_input, roi_input], classifier)
 model_holyclassifier = Model([feature_map_input,roi_input],holy_classer)
 
 print('Loading weights from {}'.format(C.model_path))
-model_rpn.load_weights(C.model_path, by_name=True)
-model_classifier.load_weights(C.model_path, by_name=True)
+#model_rpn.load_weights(C.model_path, by_name=True)
+#Pmodel_classifier.load_weights(C.model_path, by_name=True)
 
 model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
 model_holyclassifier.compile(optimizer='sgd', loss='mse')
-exit(0)
+
 
 all_imgs = []
 
@@ -196,6 +196,8 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			ROIs = ROIs_padded
 
 		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
+		plist = model_holyclassifier.predict([F,ROIs])
+		print(plist[0].shape)
 
 		for ii in range(P_cls.shape[1]):
 
