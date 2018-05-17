@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b15b9ea2-9cd2-496a-8e3d-a3edc2d007b3" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/test_frcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_frcnn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keras_frcnn/losses.py" beforeDir="false" afterPath="$PROJECT_DIR$/keras_frcnn/losses.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keras_frcnn/march.py" beforeDir="false" afterPath="$PROJECT_DIR$/keras_frcnn/march.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keras_frcnn/tst.py" beforeDir="false" afterPath="$PROJECT_DIR$/keras_frcnn/tst.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_fgcnn_only.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_fgcnn_only.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,8 +18,9 @@
     <SUITE FILE_PATH="coverage/keras_frcnn$Unnamed.coverage" NAME="train Coverage Results" MODIFIED="1526180039678" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/kfgcnn$onlyclassifier_train.coverage" NAME="onlyclassifier_train Coverage Results" MODIFIED="1526454227510" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/fg_classer$train.coverage" NAME="train Coverage Results" MODIFIED="1526385689251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/cac$tst.coverage" NAME="tst Coverage Results" MODIFIED="1526549053809" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keras_frcnn" />
-    <SUITE FILE_PATH="coverage/cac$test.coverage" NAME="test Coverage Results" MODIFIED="1526557597920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cac$tst.coverage" NAME="tst Coverage Results" MODIFIED="1526558945579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keras_frcnn" />
+    <SUITE FILE_PATH="coverage/cac$test.coverage" NAME="test Coverage Results" MODIFIED="1526558937916" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cac$onlyclassifier_train.coverage" NAME="onlyclassifier_train Coverage Results" MODIFIED="1526559861199" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/keras_frcnn$test.coverage" NAME="test Coverage Results" MODIFIED="1526128666745" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
@@ -52,10 +56,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_frcnn.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="test_frcnn.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test_frcnn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
+            <state relative-caret-position="-126">
               <caret line="154" column="53" selection-start-line="154" selection-start-column="53" selection-end-line="154" selection-end-column="53" />
             </state>
           </provider>
@@ -64,17 +68,20 @@
       <file leaf-file-name="tst.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/keras_frcnn/tst.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="45">
-              <caret line="3" column="27" selection-start-line="3" selection-start-column="25" selection-end-line="3" selection-end-column="30" />
+            <state relative-caret-position="195">
+              <caret line="13" column="10" selection-start-line="13" selection-start-column="10" selection-end-line="13" selection-end-column="10" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="march.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="march.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/keras_frcnn/march.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1140">
-              <caret line="81" column="38" selection-start-line="81" selection-start-column="38" selection-end-line="81" selection-end-column="38" />
+            <state relative-caret-position="195">
+              <caret line="85" column="41" lean-forward="true" selection-start-line="85" selection-start-column="41" selection-end-line="85" selection-end-column="41" />
               <folding>
                 <element signature="e#16#47#0" expanded="true" />
               </folding>
@@ -85,11 +92,13 @@
       <file leaf-file-name="losses.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/keras_frcnn/losses.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="50" column="149" lean-forward="true" selection-start-line="50" selection-start-column="149" selection-end-line="50" selection-end-column="149" />
+            <state relative-caret-position="405">
+              <caret line="78" column="30" lean-forward="true" selection-start-line="78" selection-start-column="30" selection-end-line="78" selection-end-column="30" />
               <folding>
                 <element signature="e#24#54#0" expanded="true" />
                 <element signature="e#471#759#0" />
+                <element signature="e#2433#3282#0" />
+                <element signature="e#3317#3391#0" />
               </folding>
             </state>
           </provider>
@@ -98,8 +107,8 @@
       <file leaf-file-name="train_fgcnn_only.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_fgcnn_only.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="284" column="60" selection-start-line="284" selection-start-column="60" selection-end-line="284" selection-end-column="60" />
+            <state relative-caret-position="154">
+              <caret line="271" column="60" selection-start-line="271" selection-start-column="60" selection-end-line="271" selection-end-column="60" />
             </state>
           </provider>
         </entry>
@@ -181,13 +190,13 @@
         <option value="$PROJECT_DIR$/keras_frcnn/roi_helpers.py" />
         <option value="$PROJECT_DIR$/train_frcnn.py" />
         <option value="$PROJECT_DIR$/keras_frcnn/RoiPoolingConv.py" />
-        <option value="$PROJECT_DIR$/keras_frcnn/march.py" />
-        <option value="$PROJECT_DIR$/train_fgcnn_only.py" />
         <option value="$PROJECT_DIR$/keras_frcnn/resnet.py" />
-        <option value="$PROJECT_DIR$/keras_frcnn/tst.py" />
         <option value="$PROJECT_DIR$/keras_frcnn/vgg.py" />
-        <option value="$PROJECT_DIR$/keras_frcnn/losses.py" />
         <option value="$PROJECT_DIR$/test_frcnn.py" />
+        <option value="$PROJECT_DIR$/keras_frcnn/losses.py" />
+        <option value="$PROJECT_DIR$/keras_frcnn/tst.py" />
+        <option value="$PROJECT_DIR$/train_fgcnn_only.py" />
+        <option value="$PROJECT_DIR$/keras_frcnn/march.py" />
       </list>
     </option>
   </component>
@@ -198,10 +207,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="131" />
-    <option name="y" value="-4" />
-    <option name="width" value="1652" />
-    <option name="height" value="1040" />
+    <option name="x" value="65" />
+    <option name="y" value="24" />
+    <option name="width" value="928" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -263,7 +272,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test">
+  <component name="RunManager" selected="Python.onlyclassifier_train">
     <configuration name="onlyclassifier_train" type="PythonConfigurationType" factoryName="Python">
       <module name="keras-frcnn" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -417,7 +426,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="6" />
+      <option name="time" value="7" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -490,6 +499,8 @@
           <folding>
             <element signature="e#24#54#0" expanded="true" />
             <element signature="e#471#759#0" />
+            <element signature="e#2433#3282#0" />
+            <element signature="e#3317#3391#0" />
           </folding>
         </state>
       </provider>
@@ -525,6 +536,8 @@
           <folding>
             <element signature="e#24#54#0" expanded="true" />
             <element signature="e#471#759#0" />
+            <element signature="e#2433#3282#0" />
+            <element signature="e#3317#3391#0" />
           </folding>
         </state>
       </provider>
@@ -581,6 +594,8 @@
           <folding>
             <element signature="e#24#54#0" expanded="true" />
             <element signature="e#471#759#0" />
+            <element signature="e#2433#3282#0" />
+            <element signature="e#3317#3391#0" />
           </folding>
         </state>
       </provider>
@@ -711,16 +726,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keras_frcnn/march.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1140">
-          <caret line="81" column="38" selection-start-line="81" selection-start-column="38" selection-end-line="81" selection-end-column="38" />
-          <folding>
-            <element signature="e#16#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/keras_frcnn/resnet.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3510">
@@ -735,25 +740,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keras_frcnn/tst.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="27" selection-start-line="3" selection-start-column="25" selection-end-line="3" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/lib/python2.7/dist-packages/keras/legacy/layers.py" />
-    <entry file="file://$PROJECT_DIR$/keras_frcnn/losses.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="50" column="149" lean-forward="true" selection-start-line="50" selection-start-column="149" selection-end-line="50" selection-end-column="149" />
-          <folding>
-            <element signature="e#24#54#0" expanded="true" />
-            <element signature="e#471#759#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/keras_frcnn/vgg.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -767,17 +754,50 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train_fgcnn_only.py">
+    <entry file="file://$PROJECT_DIR$/test_frcnn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="284" column="60" selection-start-line="284" selection-start-column="60" selection-end-line="284" selection-end-column="60" />
+        <state relative-caret-position="-126">
+          <caret line="154" column="53" selection-start-line="154" selection-start-column="53" selection-end-line="154" selection-end-column="53" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_frcnn.py">
+    <entry file="file://$PROJECT_DIR$/keras_frcnn/tst.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="154" column="53" selection-start-line="154" selection-start-column="53" selection-end-line="154" selection-end-column="53" />
+        <state relative-caret-position="195">
+          <caret line="13" column="10" selection-start-line="13" selection-start-column="10" selection-end-line="13" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keras_frcnn/losses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="78" column="30" lean-forward="true" selection-start-line="78" selection-start-column="30" selection-end-line="78" selection-end-column="30" />
+          <folding>
+            <element signature="e#24#54#0" expanded="true" />
+            <element signature="e#471#759#0" />
+            <element signature="e#2433#3282#0" />
+            <element signature="e#3317#3391#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train_fgcnn_only.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="271" column="60" selection-start-line="271" selection-start-column="60" selection-end-line="271" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keras_frcnn/march.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="85" column="41" lean-forward="true" selection-start-line="85" selection-start-column="41" selection-end-line="85" selection-end-column="41" />
+          <folding>
+            <element signature="e#16#47#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

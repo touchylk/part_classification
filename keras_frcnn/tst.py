@@ -10,7 +10,8 @@ from keras.models import Model
 def slice(x, index):
     return x[:, :, index]
 
-
+a = [1,3,4,5]
+print a[1:]
 a = Input(shape=(4, 2))
 x1 = Lambda(slice, output_shape=(4, 1), arguments={'index': 0})(a)
 x2 = Lambda(slice, output_shape=(4, 1), arguments={'index': 1})(a)

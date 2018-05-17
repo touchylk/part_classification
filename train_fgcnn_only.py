@@ -185,6 +185,7 @@ else:
 
 img_input = Input(shape=input_shape_img)
 roi_input = Input(shape=(None, 4))  # roiinput是什么,要去看看清楚
+part_roi_input = Input(shape=[None,4])
 bird_rois_input0 = Input(shape=(None, 4))
 bird_rois_input1 = Input(shape=(None, 4))
 bird_rois_input2 = Input(shape=(None, 4))
@@ -204,9 +205,8 @@ rpn = nn.rpn(shared_layers, num_anchors)  ##这里应该是只是做了两层简
 classifier = nn.classifier(shared_layers, roi_input, cfg.num_rois, nb_classes=len(classes_count),
                            trainable=True)  # 主要这里的nb_classes改程序的时候要主要
 # 这里roiinput 似乎是作为一个输入,看下面怎么弄的e
-bird_classifier_output = nn.fg_classifier(shared_layers,bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,
-                                          bird_rois_input5,bird_rois_input6,nb_classes=200, trainable=True)
-
+#bird_classifier_output = nn.fg_classifier(shared_layers,bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,bird_rois_input5,bird_rois_input6,nb_classes=200, trainable=True)
+holyclass_out = nn.fine_layer(shared_layers, part_roi_input,nb_classes=200,trainable=True)
 
 '''
 head_roi = Input(shape=(None, 4))
@@ -234,8 +234,8 @@ model_birdclassifier  =Model([img_input,head_roi,legs_roi,wings_roi,back_roi,bel
 
 model_rpn = Model(img_input, rpn[:2])
 model_classifier = Model([img_input, roi_input], classifier)
-model_birdclassifier = Model([img_input, bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,bird_rois_input5,bird_rois_input6], bird_classifier_output)
-
+#model_birdclassifier = Model([img_input, bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,bird_rois_input5,bird_rois_input6], bird_classifier_output)
+model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
 #model_birdclassifier = Model([img_input,roi_input],bird_)
 
 # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
@@ -261,10 +261,9 @@ model_classifier.compile(optimizer=optimizer_classifier,
                          metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 lossfn_list =[]
 for i in range(7):
-    lossfn_list.append(losses.part_loss)
-model_birdclassifier.compile(optimizer=optimizer,
-                             loss=lossfn_list,
-                             )
+    lossfn_list.append(losses.part_loss(7))
+model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
+#model_birdclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 
 model_all.compile(optimizer='sgd', loss='mae')
 
@@ -390,7 +389,8 @@ for epoch_num in range(num_epochs):
 
             loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]],
                                                          [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
-
+            #print(Y2[:, sel_samples, :].shape, Y1[:, sel_samples, :].shape)
+            #(1,24,56) (1,24,8)
             losses[iter_num, 0] = loss_rpn[1]
             losses[iter_num, 1] = loss_rpn[2]
 

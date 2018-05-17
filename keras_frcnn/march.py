@@ -94,7 +94,6 @@ class get_voc_label(object):
             h *= net_size[0]
             cor_np = np.array([x, y, w, h])
             cor_np = np.expand_dims(cor_np, axis=0)
-            cor_np = np.expand_dims(cor_np, axis=0)
             boxdict[box['name']] = cor_np
 
         npnone = np.zeros([1,1,4])

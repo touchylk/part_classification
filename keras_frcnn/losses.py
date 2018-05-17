@@ -55,7 +55,7 @@ def rpn_loss_cls(num_anchors):
 
 	return rpn_loss_cls_fixed_num
 
-
+#这里vgg网络输出的维度是1,32,28
 def class_loss_regr(num_classes):
 	def class_loss_regr_fixed_num(y_true, y_pred):
 		x = y_true[:, :, 4*num_classes:] - y_pred
@@ -68,6 +68,15 @@ def class_loss_regr(num_classes):
 
 def class_loss_cls(y_true, y_pred):
 	return lambda_cls_class * K.mean(categorical_crossentropy(y_true[0, :, :], y_pred[0, :, :]))
+
+
+
+
+#在train里边要传的是1,200+，在这里里边同样是1,，200+
+def holy_loss(nb_num):
+	def holy_loss_fixed_num(y_true,y_pred):
+		return y_true[:,0]* K.mean(categorical_crossentropy(y_pred[:,:],y_true[:,1:]))
+	return holy_loss_fixed_num
 
 #[head_classifier,legs_classifier,wings_classifier,back_classifier,belly_classifier,breast_classifier,tail_classifier]
 def bird_loss(num):
