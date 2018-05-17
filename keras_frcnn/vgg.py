@@ -143,9 +143,9 @@ def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=
 def part_net(out_roi_pool,i,nb_classes = 200):
     x = Lambda(slice,output_shape=None,arguments={'i':i})(out_roi_pool)
     out = Flatten(name='flatten'+str(i))(x)
-    out = Dense(4096,activation='relu',name='fc1'+str(i))(out)
+    out = Dense(256,activation='relu',name='fc1'+str(i))(out)
     out = Dropout(0.5)(out)
-    out = Dense(4096,activation='relu',name='fc2'+str(i))(out)
+    out = Dense(256,activation='relu',name='fc2'+str(i))(out)
     out = Dropout(0.5)(out)
     out_class = Dense(nb_classes,activation='softmax',kernel_initializer='zero',name='dense_class'+str(i))(out)
     return out_class
@@ -187,9 +187,9 @@ def fg_classifier(base_layers, input_rois0,input_rois1, input_rois2, input_rois3
 
 def fg_layer(input, name,nb_classes=200):
     out = TimeDistributed(Flatten(name='flatten' + name))(input)
-    out = TimeDistributed(Dense(4096, activation='relu', name='fc1' + name))(out)
+    out = TimeDistributed(Dense(256, activation='relu', name='fc1' + name))(out)
     out = TimeDistributed(Dropout(0.5))(out)
-    out = TimeDistributed(Dense(4096, activation='relu', name='fc2' + name))(out)
+    out = TimeDistributed(Dense(256, activation='relu', name='fc2' + name))(out)
     out = TimeDistributed(Dropout(0.5))(out)
     out = TimeDistributed(Dense(nb_classes, activation='softmax', kernel_initializer='zero'),name='dense_class_{}'.format(name))(out)
     return out

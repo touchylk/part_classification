@@ -261,7 +261,7 @@ model_classifier.compile(optimizer=optimizer_classifier,
                          metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 lossfn_list =[]
 for i in range(7):
-    lossfn_list.append(losses.part_loss(7))
+    lossfn_list.append(losses.holy_loss(7))
 model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 #model_birdclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 
@@ -269,6 +269,7 @@ model_all.compile(optimizer='sgd', loss='mae')
 
 train_num =1000
 for i in range(train_num):
+    break
     img_path, boxdict, labellist,labelnpout = data_lei.get_next_batch()
     img = cv2.imread(img_path)
     #[img_input, head_roi, legs_roi, wings_roi, back_roi, belly_roi, breast_roi, tail_roi]
@@ -281,7 +282,7 @@ for i in range(train_num):
     boxnp = np.expand_dims(boxnp,axis=1)
     if K.image_dim_ordering() == 'tf':
         X = np.transpose(X, (0, 2, 3, 1))
-    model_birdclassifier.train_on_batch(input_list,labellist)
+    model_holyclassifier.train_on_batch(input_list,labellist)
 
 
 epoch_length = 1000
@@ -389,6 +390,9 @@ for epoch_num in range(num_epochs):
 
             loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]],
                                                          [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
+            img_path, boxdict, labellist, labelnpout = data_lei.get_next_batch()
+            model_holyclassifier.train_on_batch([X,X2[:, sel_samples, :]],labellist)
+
             #print(Y2[:, sel_samples, :].shape, Y1[:, sel_samples, :].shape)
             #(1,24,56) (1,24,8)
             losses[iter_num, 0] = loss_rpn[1]
