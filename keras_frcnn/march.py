@@ -24,6 +24,7 @@ class get_voc_label(object):
         self.bird_class_mapping = bird_class_mapping
         self.max_batch = len(all_imgs)
         self.batch_index = 0
+        self.epoch = 0
         if trainable:
             self.trainable = 'trainval'
         else:
@@ -35,6 +36,7 @@ class get_voc_label(object):
             self.batch_index+=1
             if self.batch_index>=self.max_batch:
                 self.batch_index=0
+                self.epoch+=1
             img = self.all_imgs[self.batch_index]
         label = self.bird_class_mapping[img['bird_class_name']]
         boxlist =[]
@@ -62,7 +64,17 @@ class get_voc_label(object):
         self.batch_index += 1
         if self.batch_index >= self.max_batch:
             self.batch_index = 0
+            self.epoch += 1
         return img_path,boxdict,labellist,labelnpout
+    def next_batch(self):
+        img = self.all_imgs[self.batch_index]
+        while img['imageset'] != self.trainable:
+            self.batch_index += 1
+            if self.batch_index >= self.max_batch:
+                self.batch_index = 0
+                self.epoch += 1
+            img = self.all_imgs[self.batch_index]
+        label =
 
 
     def match(self,boxlist, label):

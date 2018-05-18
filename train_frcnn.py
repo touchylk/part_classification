@@ -283,7 +283,8 @@ for epoch_num in range(num_epochs):
 					sel_samples = random.choice(pos_samples)
 
 			loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
-
+			#X.shape =(1, 600, 750, 3)
+			#X2[:, sel_samples, :].shape = (1, 24, 4)
 			losses[iter_num, 0] = loss_rpn[1]
 			losses[iter_num, 1] = loss_rpn[2]
 

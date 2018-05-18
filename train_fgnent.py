@@ -54,6 +54,18 @@ if 'bg' not in classes_count:
     class_mapping['bg'] = len(class_mapping)
 
 cfg.class_mapping = class_mapping
+
+
+print('Training images per class:')
+pprint.pprint(classes_count)
+print('Num classes (including bg) = {}'.format(len(classes_count)))
+print('Training bird per class:')
+pprint.pprint(bird_class_count)
+print('total birds class is {}'.format(len(bird_class_count)))
+print('bird_class_mapping')
+pprint.pprint(bird_class_mapping)
+
+
 config_output_filename = cfg.config_filepath
 with open(config_output_filename, 'wb') as config_f:
     pickle.dump(cfg, config_f)
@@ -68,11 +80,8 @@ val_imgs = [s for s in all_imgs if s['imageset'] == 'test']
 print('Num train samples {}'.format(len(train_imgs)))
 print('Num val samples {}'.format(len(val_imgs)))
 
-data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, cfg, nn.get_img_output_length,
-                                               K.image_dim_ordering(), mode='train')
-
-data_gen_val = data_generators.get_anchor_gt(val_imgs, classes_count, cfg, nn.get_img_output_length,
-                                             K.image_dim_ordering(), mode='val')
+#data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, cfg, nn.get_img_output_length,K.image_dim_ordering(), mode='train')
+#data_gen_val = data_generators.get_anchor_gt(val_imgs, classes_count, cfg, nn.get_img_output_length,K.image_dim_ordering(), mode='val')
 input_shape_img = (None, None, 3)
 
 img_input = Input(shape=input_shape_img)
@@ -102,4 +111,7 @@ lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss(7))
 model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
-print('666')
+
+max_epoch=10
+while data_lei.epoch<=max_epoch:
+    pass
