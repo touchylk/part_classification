@@ -9,7 +9,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from keras.layers import Input, Add, Dense, Activation, Flatten, Convolution2D, MaxPooling2D, ZeroPadding2D, \
-    AveragePooling2D, TimeDistributed
+    AveragePooling2D, TimeDistributed,Lambda
 
 from keras import backend as K
 
@@ -260,11 +260,11 @@ def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=
     partout_6 = part_net(out_roi_pool, 6, nb_classes)
     # holy_classout = merge.concatenate([partout_0,partout_1,partout_2,partout_3,partout_4,partout_5,partout_6],mode='concat')
     return [partout_0, partout_1, partout_2, partout_3, partout_4, partout_5, partout_6]
-256
+
 def part_net(out_roi_pool, i, nb_classes= 200):
     x = Lambda(slice, output_shape=None, arguments={'i': i})(out_roi_pool)
     out = MaxPooling2D((2, 2), strides=(2, 2))(x)
-    out = conv_block(out, 3, [256, 256, 1024], stage=5, block='a'+str(i),  strides=(1, 1), trainable=trainable)
+    out = conv_block(out, 3, [256, 256, 1024], stage=5, block='a'+str(i),  strides=(1, 1), trainable=True)
     out = identity_block(out,3, [256,256,1024],stage=5,block='b'+str(i),trainable=True)
     out = AveragePooling2D((7, 7))(out)
     out = Flatten()(out)

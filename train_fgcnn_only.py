@@ -109,8 +109,8 @@ else:
 
 # cfg.model_path = options.output_weight_path
 # cfg.num_rois = int(options.num_rois)
-
-if 1:  # cfg.network == 'vgg':
+cfg.network = 'resnet50'
+if 0:  # cfg.network == 'vgg':
     # cfg.network = 'vgg'
     from keras_frcnn import vgg as nn
 elif cfg.network == 'resnet50':
