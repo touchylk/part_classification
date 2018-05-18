@@ -5,15 +5,15 @@ import xml.etree.ElementTree as ET
 import config
 import numpy as np
 cfg = config.Config()
-def get_data(input_path):
+def get_data(input_path,part_class_map):
 	all_imgs = []
 
 	classes_count = {}
 
-	class_mapping = {}
+	#class_mapping = {}
 
 	bird_classes_count ={}
-	bird_class_mapping = {}
+	#bird_class_mapping = {}
 
 	visualise = False
 
@@ -71,13 +71,13 @@ def get_data(input_path):
 					bird_classes_count[bird_class_name]= 1
 				else:
 					bird_classes_count[bird_class_name] += 1
-				if bird_class_name not in bird_class_mapping:
-					bird_class_mapping[bird_class_name] = len(bird_class_mapping)
+				#if bird_class_name not in bird_class_mapping:
+				#	bird_class_mapping[bird_class_name] = len(bird_class_mapping)
 				#bird_class_index = {}
 
 				if len(oneparts) > 0:
 					annotation_data = {'filepath': (data_path+element_filename), 'width': element_width,
-									   'height': element_height, 'bboxes': []}
+									   'height': element_height, 'bboxes': [],'index':0}
 					element_train_or_test = element.find('train_or_test').text
 					if element_train_or_test == 'train':
 						annotation_data['imageset'] = 'trainval'
@@ -88,6 +88,7 @@ def get_data(input_path):
 						print 'error'
 						raise ValueError
 				annotation_data['bird_class_name'] = bird_class_name
+				annotation_data['index']=element.find('INDEX').text
 
 				for onepart in oneparts:
 					class_name = onepart.find('name').text
@@ -96,8 +97,8 @@ def get_data(input_path):
 					else:
 						classes_count[class_name] += 1
 
-					if class_name not in class_mapping:
-						class_mapping[class_name] = len(class_mapping)
+					#if class_name not in class_mapping:
+					#	class_mapping[class_name] = len(class_mapping)
 
 					part_bbox = onepart.find('bndbox')
 					part_x = float(part_bbox.find('x').text)
@@ -138,7 +139,7 @@ def get_data(input_path):
 			#	print(e)
 			#	print('oo')
 			#	continue
-	return all_imgs, classes_count, class_mapping,bird_classes_count,bird_class_mapping
+	return all_imgs, classes_count, bird_classes_count
 		# all_imgs 是annotation_data的列表
 		# 每一个annotationdata是一个dict,包含 了''filepath,width,height,'bboxes,imageset
 		#其中,bboxes是一个列表,每一个box是一个字典

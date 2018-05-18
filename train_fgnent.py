@@ -25,6 +25,16 @@ from keras_frcnn import march
 
 from keras_frcnn.pascal_voc_parser import get_data
 
+part_class_mapping={'head':0,'wings':1,'legs':2,'back':3,'belly':4,'breast':5,'tail':6}
+bird_map_path = '/media/e813/E/dataset/CUBbird/CUB_200_2011/CUB_200_2011/c.pkl'
+with open(bird_map_path,'r') as f:
+    bird_class_mapping=pickle.load(f)
+#pprint.pprint(bird_class_mapping)
+def read_prepare_input(img_path):
+    img = cv2.imread(img_path)
+    return img
+
+
 cfg = config.Config()
 sys.setrecursionlimit(40000)
 
@@ -46,18 +56,21 @@ else:
     print('does not init')
     #raise ValueError
 
-all_imgs, classes_count, class_mapping, bird_class_count, bird_class_mapping = get_data(cfg.train_path)
-data_lei = march.get_voc_label(all_imgs, classes_count, class_mapping, bird_class_count, bird_class_mapping,trainable=True)
+all_imgs, classes_count, bird_class_count = get_data(cfg.train_path,part_class_mapping)
+data_lei = march.get_voc_label(all_imgs, classes_count, part_class_mapping, bird_class_count, bird_class_mapping,config= cfg,trainable=True)
+#pprint.pprint(classes_count)
+#pprint.pprint(part_class_mapping)
 # 这里的类在match里边定义
 if 'bg' not in classes_count:
     classes_count['bg'] = 0
-    class_mapping['bg'] = len(class_mapping)
+    part_class_mapping['bg'] = len(part_class_mapping)
 
-cfg.class_mapping = class_mapping
+cfg.class_mapping = part_class_mapping
 
 
 print('Training images per class:')
 pprint.pprint(classes_count)
+pprint.pprint(part_class_mapping)
 print('Num classes (including bg) = {}'.format(len(classes_count)))
 print('Training bird per class:')
 pprint.pprint(bird_class_count)
@@ -109,9 +122,29 @@ except:
 optimizer = Adam(lr=1e-5)
 lossfn_list =[]
 for i in range(7):
-    lossfn_list.append(losses.holy_loss(7))
+    lossfn_list.append(losses.holy_loss())
 model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 
 max_epoch=10
+step= 0
 while data_lei.epoch<=max_epoch:
-    pass
+    img_np, boxnp, labellist ,img_path,index= data_lei.next_batch()
+    #input_img = read_prepare_input(img_path)
+    #print(boxnp.shape)
+    #print(img_path)
+    #print(index)
+    #exit(4)
+    #print(labellist)
+    #exit(4)
+    holynet_loss = model_holyclassifier.train_on_batch([img_np,boxnp],labellist)
+    #holynet_loss = model_holyclassifier.train_on_batch([img_np, boxnp], labellist)
+    #holynet_loss = model_holyclassifier.train_on_batch([img_np, boxnp], labellist)
+    #holynet_loss = model_holyclassifier.train_on_batch([img_np, boxnp], labellist)
+    #A = model_holyclassifier.predict([img_np,boxnp])
+    #print(holynet_loss)
+    #exit()
+    #print(boxnp)
+    print('step is {} and epoch is {}'.format(data_lei.batch_index,data_lei.epoch))
+    print(holynet_loss)
+
+

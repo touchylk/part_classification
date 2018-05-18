@@ -5,6 +5,7 @@ import pdb
 import math
 from . import data_generators
 import copy
+import cv2
 class_num =200
 part_map_num = {'head':0,'legs':1,'wings':2,'back':3,'belly':4,'breast':5,'tail':6}
 part_map_name = {}
@@ -16,7 +17,7 @@ net_size=[38,56]
 #def get_label_from_voc(all_imgs, classes_count, class_mapping,bird_classes_count,bird_class_mapping):
 
 class get_voc_label(object):
-    def __init__(self,all_imgs, classes_count, class_mapping,bird_classes_count,bird_class_mapping,trainable=True):
+    def __init__(self,all_imgs, classes_count, class_mapping,bird_classes_count,bird_class_mapping,config,trainable=True):
         self.all_imgs = all_imgs
         self.classes_count = classes_count
         self.class_mapping = class_mapping
@@ -25,6 +26,16 @@ class get_voc_label(object):
         self.max_batch = len(all_imgs)
         self.batch_index = 0
         self.epoch = 0
+        self.part_num =  len(classes_count)
+        self.bird_class_num = len(bird_classes_count)
+        self.net_size = [38,56]
+        self.C =config
+        if self.C.network=='resnet50':
+            self.get_outputsize =self.get_img_output_length_res50
+        elif self.C.network=='vgg':
+            self.get_outputsize = self.get_img_output_length_vgg
+        else:
+            raise ValueError('DSFA')
         if trainable:
             self.trainable = 'trainval'
         else:
@@ -74,7 +85,53 @@ class get_voc_label(object):
                 self.batch_index = 0
                 self.epoch += 1
             img = self.all_imgs[self.batch_index]
-        label =
+        img_path = img['filepath']
+        img_size,img_np = self.read_prepare_img(img_path,img['width'],img['height'])
+        netout_width,netout_height= self.get_outputsize(width=img_size[0],height=img_size[1])
+        bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
+        size_w = img_size[0]
+        size_h = img_size[1]
+        if 1:
+            boxlist = []
+            for i in range(self.part_num):
+                boxlist.append(np.array([0,0,netout_width-1,netout_height-1],dtype=np.int16))
+            boxnp = np.copy(boxlist)
+            boxnp = np.expand_dims(boxnp,axis=0)
+            """print boxnp.shape
+            print self.part_num
+            print boxnp[0,0,:]
+            assert boxnp.shape==[1,self.part_num,4]
+            assert boxnp[0,0,:]==np.array([0,0,netout_width,netout_height],dtype=np.int16)"""
+        #boxnp = np.zeros([1, self.part_num, 4])
+        onelabel = np.zeros([1,self.bird_class_num+1])
+        labellist = []
+        for i in range(self.part_num):
+            labellist.append(onelabel)
+        for bbox in img['bboxes']:
+            part_index = self.class_mapping[bbox['class']]
+            #print bbox
+            x1 = bbox['x1']
+            x2 = bbox['x2']
+            y1= bbox['y1']
+            y2 = bbox['y2']
+            w = x2-x1
+            h = y2-y1
+            x1= x1/img['width']*netout_width
+            w = w/img['width']*netout_width
+            y1 = y1/img['height']*netout_height
+            h = h/img['height']*netout_height
+            if x1<0:
+                x1=0
+            if y1<0:
+                y1=0
+            boxnp[0,part_index,:] = [x1,y1,w,h]
+            labellist[part_index][0][bird_class_label_num+1] = 1
+            labellist[part_index][0][0] = 1
+        self.batch_index += 1
+        if self.batch_index >= self.max_batch:
+            self.batch_index = 0
+            self.epoch += 1
+        return img_np,boxnp,labellist,img_path,img['index']
 
 
     def match(self,boxlist, label):
@@ -116,9 +173,64 @@ class get_voc_label(object):
                 boxdict[onecname] = npnone
 
         return boxdict, labellist,labelnpout
+    def read_prepare_img(self,img_path,width,height):
+        img = cv2.imread(img_path)
+        assert width==img.shape[1]
+        assert height==img.shape[0]
+        resized_width, resized_height=self.get_new_img_size(width,height)
+        img = cv2.resize(img, (resized_width, resized_height), interpolation=cv2.INTER_CUBIC)
+        size =[resized_width, resized_height]
+        img = img[:, :, (2, 1, 0)]  # BGR -> RGB
+        img = img.astype(np.float32)
+        img[:, :, 0] -= self.C.img_channel_mean[0]
+        img[:, :, 1] -= self.C.img_channel_mean[1]
+        img[:, :, 2] -= self.C.img_channel_mean[2]
+        img /= self.C.img_scaling_factor
+
+        img = np.transpose(img, (2, 0, 1))
+        img = np.expand_dims(img, axis=0)
+        img = np.transpose(img, (0, 2, 3, 1))
+
+        return size,img
+
+    def get_new_img_size(self,width, height, img_min_side=600):
+        if width <= height:
+            f = float(img_min_side) / width
+            resized_height = int(f * height)
+            resized_width = img_min_side
+        else:
+            f = float(img_min_side) / height
+            resized_width = int(f * width)
+            resized_height = img_min_side
+
+        return resized_width, resized_height
+
+    def get_img_output_length_res50(self,width, height):
+        def get_output_length(input_length):
+            # zero_pad
+            input_length += 6
+            # apply 4 strided convolutions
+            filter_sizes = [7, 3, 1, 1]
+            stride = 2
+            for filter_size in filter_sizes:
+                input_length = (input_length - filter_size + stride) // stride
+            return input_length
+
+        return get_output_length(width), get_output_length(height)
+
+    def get_img_output_length_vgg(self,width, height):
+        def get_output_length(input_length):
+            return input_length // 16
+
+        return get_output_length(width), get_output_length(height)
 
 
-#boxlist的内容是一个dict,name为head,legs等,cor为左上角坐标,宽和长,在0-1之间
+
+
+
+
+
+        #boxlist的内容是一个dict,name为head,legs等,cor为左上角坐标,宽和长,在0-1之间
 #label的内同是一个数
 def match(boxlist,label):
     labellist= []

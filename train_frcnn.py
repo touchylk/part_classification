@@ -154,8 +154,8 @@ classifier = nn.classifier(shared_layers, roi_input, cfg.num_rois, nb_classes=le
 
 model_share = Model(img_input,shared_layers)
 model_rpn = Model(img_input, rpn[:2])
-model_classifier = Model([img_input, roi_input], classifier)
-
+model_classifier = Model([img_input, roi_input], classifier[:2])
+model_classifier1 = Model([img_input, roi_input], classifier)
 # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
 model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
@@ -175,10 +175,10 @@ optimizer_classifier = Adam(lr=1e-5)
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
-
+model_classifier1.compile(optimizer='sgd', loss='mae')
 model_all.compile(optimizer='sgd', loss='mae')
 model_share.compile(optimizer='sgd',loss='mae')
-X, Y, img_data = next(data_gen_train)
+#X, Y, img_data = next(data_gen_train)
 #share_output = model_share.predict_on_batch(X)
 #print(type(share_output))
 #print(share_output.shape)
@@ -238,7 +238,7 @@ for epoch_num in range(num_epochs):
 			# note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
 			X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, cfg, class_mapping)
 			#print(X2)
-			exit(8)
+			#exit(8)
 			#这里,x2为roi区域的坐标标签,Y1为roi区域的分类标签,y2为roi区域的坐标标签,坐标标签还是带label的.
 
 			if X2 is None:
@@ -283,6 +283,10 @@ for epoch_num in range(num_epochs):
 					sel_samples = random.choice(pos_samples)
 
 			loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
+			netout= model_classifier1.predict([X, X2[:, sel_samples, :]])
+			print(netout[2].shape)
+			print(X.shape)
+			exit(45)
 			#X.shape =(1, 600, 750, 3)
 			#X2[:, sel_samples, :].shape = (1, 24, 4)
 			losses[iter_num, 0] = loss_rpn[1]
