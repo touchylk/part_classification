@@ -97,5 +97,9 @@ except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
     raise ValueError('load wrong')
+optimizer = Adam(lr=1e-5)
+lossfn_list =[]
+for i in range(7):
+    lossfn_list.append(losses.holy_loss(7))
 model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 print('666')
