@@ -128,7 +128,7 @@ model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 max_epoch=10
 step= 0
 while data_lei.epoch<=max_epoch:
-    img_np, boxnp, labellist ,img_path,index= data_lei.next_batch()
+    img_np,boxnp, labellist = data_lei.next_batch()
     #input_img = read_prepare_input(img_path)
     #print(boxnp.shape)
     #print(img_path)

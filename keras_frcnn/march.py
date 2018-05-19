@@ -30,6 +30,8 @@ class get_voc_label(object):
         self.bird_class_num = len(bird_classes_count)
         self.net_size = [38,56]
         self.C =config
+        self.input_img_size_witdth = 600
+        self.input_img_size_heigth = 600
         if self.C.network=='resnet50':
             self.get_outputsize =self.get_img_output_length_res50
         elif self.C.network=='vgg':
@@ -77,61 +79,65 @@ class get_voc_label(object):
             self.batch_index = 0
             self.epoch += 1
         return img_path,boxdict,labellist,labelnpout
-    def next_batch(self):
-        img = self.all_imgs[self.batch_index]
-        while img['imageset'] != self.trainable:
+    def next_batch(self,batech_size):
+        img_input_np= np.zeros([batech_size,self.input_img_size_heigth,self.input_img_size_witdth,3])
+        netout_width, netout_height = self.get_outputsize(width=self.input_img_size_witdth, height=self.input_img_size_heigth)
+        part_roi_input = np.zeros([batech_size,self.part_num,4],dtype=np.int16)
+        labellist =[]
+        onelabel = np.zeros([batech_size,self.bird_class_num+1])
+        for nn in range(self.part_num):
+            labellist.append(onelabel)
+        for n_b in range(batech_size):
+            img = self.all_imgs[self.batch_index]
+            while img['imageset'] != self.trainable:
+                self.batch_index += 1
+                if self.batch_index >= self.max_batch:
+                    self.batch_index = 0
+                    self.epoch += 1
+                img = self.all_imgs[self.batch_index]
+            img_path = img['filepath']
+            img_np = self.read_prepare_img(img_path,img['width'],img['height'],width_to_resize=self.input_img_size_witdth,heigth_to_resize=self.input_img_size_heigth)
+            img_input_np[n_b,:,:,:]=img_np
+            #netout_width,netout_height= self.get_outputsize(width=self.input_img_size_witdth,height=self.input_img_size_heigth)
+            bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
+            if 1:
+                boxlist = []
+                for i in range(self.part_num):
+                    part_roi_input[n_b,i,:]=np.array([0,0,netout_width-1,netout_height-1],dtype=np.int16)
+                    #boxlist.append(np.array([0,0,netout_width-1,netout_height-1],dtype=np.int16))
+                #boxnp = np.copy(boxlist)
+                #boxnp = np.expand_dims(boxnp,axis=0)
+                """print boxnp.shape
+                print self.part_num
+                print boxnp[0,0,:]
+                assert boxnp.shape==[1,self.part_num,4]
+                assert boxnp[0,0,:]==np.array([0,0,netout_width,netout_height],dtype=np.int16)"""
+            #boxnp = np.zeros([1, self.part_num, 4])
+            for bbox in img['bboxes']:
+                part_index = self.class_mapping[bbox['class']]
+                #print bbox
+                x1 = bbox['x1']
+                x2 = bbox['x2']
+                y1= bbox['y1']
+                y2 = bbox['y2']
+                w = x2-x1
+                h = y2-y1
+                x1= x1/img['width']*netout_width
+                w = w/img['width']*netout_width
+                y1 = y1/img['height']*netout_height
+                h = h/img['height']*netout_height
+                if x1<0:
+                    x1=0
+                if y1<0:
+                    y1=0
+                part_roi_input[n_b,part_index,:] = [x1,y1,w,h]
+                labellist[part_index][n_b][bird_class_label_num+1] = 1
+                labellist[part_index][n_b][0] = 1
             self.batch_index += 1
             if self.batch_index >= self.max_batch:
                 self.batch_index = 0
                 self.epoch += 1
-            img = self.all_imgs[self.batch_index]
-        img_path = img['filepath']
-        img_size,img_np = self.read_prepare_img(img_path,img['width'],img['height'])
-        netout_width,netout_height= self.get_outputsize(width=img_size[0],height=img_size[1])
-        bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
-        size_w = img_size[0]
-        size_h = img_size[1]
-        if 1:
-            boxlist = []
-            for i in range(self.part_num):
-                boxlist.append(np.array([0,0,netout_width-1,netout_height-1],dtype=np.int16))
-            boxnp = np.copy(boxlist)
-            boxnp = np.expand_dims(boxnp,axis=0)
-            """print boxnp.shape
-            print self.part_num
-            print boxnp[0,0,:]
-            assert boxnp.shape==[1,self.part_num,4]
-            assert boxnp[0,0,:]==np.array([0,0,netout_width,netout_height],dtype=np.int16)"""
-        #boxnp = np.zeros([1, self.part_num, 4])
-        onelabel = np.zeros([1,self.bird_class_num+1])
-        labellist = []
-        for i in range(self.part_num):
-            labellist.append(onelabel)
-        for bbox in img['bboxes']:
-            part_index = self.class_mapping[bbox['class']]
-            #print bbox
-            x1 = bbox['x1']
-            x2 = bbox['x2']
-            y1= bbox['y1']
-            y2 = bbox['y2']
-            w = x2-x1
-            h = y2-y1
-            x1= x1/img['width']*netout_width
-            w = w/img['width']*netout_width
-            y1 = y1/img['height']*netout_height
-            h = h/img['height']*netout_height
-            if x1<0:
-                x1=0
-            if y1<0:
-                y1=0
-            boxnp[0,part_index,:] = [x1,y1,w,h]
-            labellist[part_index][0][bird_class_label_num+1] = 1
-            labellist[part_index][0][0] = 1
-        self.batch_index += 1
-        if self.batch_index >= self.max_batch:
-            self.batch_index = 0
-            self.epoch += 1
-        return img_np,boxnp,labellist,img_path,img['index']
+        return img_input_np,part_roi_input,labellist #img_path,img['index']
 
 
     def match(self,boxlist, label):
@@ -173,13 +179,13 @@ class get_voc_label(object):
                 boxdict[onecname] = npnone
 
         return boxdict, labellist,labelnpout
-    def read_prepare_img(self,img_path,width,height):
+    def read_prepare_img(self,img_path,width,height,width_to_resize,heigth_to_resize):
         img = cv2.imread(img_path)
         assert width==img.shape[1]
         assert height==img.shape[0]
-        resized_width, resized_height=self.get_new_img_size(width,height)
-        img = cv2.resize(img, (resized_width, resized_height), interpolation=cv2.INTER_CUBIC)
-        size =[resized_width, resized_height]
+        #resized_width, resized_height=self.get_new_img_size(width,height)
+        img = cv2.resize(img, (width_to_resize, heigth_to_resize), interpolation=cv2.INTER_CUBIC)
+        size =[heigth_to_resize, heigth_to_resize]
         img = img[:, :, (2, 1, 0)]  # BGR -> RGB
         img = img.astype(np.float32)
         img[:, :, 0] -= self.C.img_channel_mean[0]
@@ -191,7 +197,7 @@ class get_voc_label(object):
         img = np.expand_dims(img, axis=0)
         img = np.transpose(img, (0, 2, 3, 1))
 
-        return size,img
+        return img
 
     def get_new_img_size(self,width, height, img_min_side=600):
         if width <= height:
