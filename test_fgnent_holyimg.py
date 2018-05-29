@@ -108,15 +108,15 @@ holyclass_out = nn.fine_layer(shared_layers, part_roi_input,nb_classes=200)
 
 class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,nb_classes=200)
 
-#model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
+model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
 model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
 
 try:
-    print('loading weights from {}'.format(cfg.base_net_weights))
+    print('loading weights from {}'.format(cfg.holy_img_weight_path+'model_holyimg'+str(3)+'.hdf5'))
     #model_rpn.load_weights(cfg.base_net_weights, by_name=True)
     #model_classifier.load_weights(cfg.base_net_weights, by_name=True)
     #model_birdclassifier.load_weights(cfg.base_net_weights, by_name=True)
-    #model_holyclassifier.load_weights(cfg.base_net_weights, by_name=True)
+    model_holyclassifier.load_weights(cfg.base_net_weights, by_name=True)
     model_classifier_holyimg.load_weights(cfg.base_net_weights,by_name=True)
 except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
@@ -126,8 +126,8 @@ optimizer = Adam(lr=1e-5)
 lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss())
-#model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
-model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentropy')
+model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
+model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentropy',metrics='')
 
 max_epoch=10
 step= 0
