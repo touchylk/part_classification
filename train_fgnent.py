@@ -131,7 +131,9 @@ model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentr
 
 max_epoch=10
 step= 0
+now_epoch = 0
 while data_lei.epoch<=max_epoch:
+    step+=1
     img_np,boxnp, label,img_path = data_lei.next_batch(1)
     #print(img_np.shape)
     #print(boxnp.shape)
@@ -144,12 +146,11 @@ while data_lei.epoch<=max_epoch:
     #exit(4)
     #holynet_loss = model_holyclassifier.train_on_batch([img_np,boxnp],labellist)
     holyimg_loss = model_classifier_holyimg.train_on_batch([img_np,boxnp],label)
-    predict = model_classifier_holyimg.predict([img_np,boxnp])
+    print(holyimg_loss)
+    #predict = model_classifier_holyimg.predict([img_np,boxnp])
     #predict =np.mean(predict,axis=1)
-    print(predict[0])
-    for i in range(7):
-        print(np.argmax(predict[i],axis=1))
-    result = np.max(predict,axis=1)
+    #print(predict[0])
+    #print(boxnp)
     #print(predict.shape)
     #print(result)
     #exit()
@@ -161,6 +162,12 @@ while data_lei.epoch<=max_epoch:
     #exit()
     #print(boxnp)
     print('step is {} batch_index is {} and epoch is {}'.format(step,data_lei.batch_index,data_lei.epoch))
+
+    if data_lei.epoch!= now_epoch:
+        model_classifier_holyimg.save_weights(cfg.holy_img_weight_path+'model_holyimg'+str(data_lei.epoch)+'.hdf5')
+        now_epoch = data_lei.epoch
+    if data_lei.epoch == 5:
+        break
     #print(holynet_loss)
 
 

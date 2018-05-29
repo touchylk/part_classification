@@ -99,7 +99,7 @@ class get_voc_label(object):
             img_np = self.read_prepare_img(img_path,img['width'],img['height'],width_to_resize=self.input_img_size_witdth,heigth_to_resize=self.input_img_size_heigth)
             img_input_np[n_b,:,:,:]=img_np
             #netout_width,netout_height= self.get_outputsize(width=self.input_img_size_witdth,height=self.input_img_size_heigth)
-            bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
+            bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]-1
             label = np.zeros([1,200],dtype=np.int16)
             label[0][bird_class_label_num] = 1
 

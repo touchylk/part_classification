@@ -25,3 +25,4 @@ outpath = '/media/e813/E/dataset/CUBbird/CUB_200_2011/CUB_200_2011/c.pkl'
  #   os.makedirs(outpath)
 with open(outpath, 'wb') as f:
     pickle.dump(map, f)
+    pass

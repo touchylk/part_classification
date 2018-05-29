@@ -57,6 +57,7 @@ class Config:
 		# https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5
 
 		self.model_path = '/media/e813/D/weights/kerash5/frcnn/TST2/model_frcnn.vgg.hdf5'#'model_frcnn.vgg.hdf5'
+		self.holy_img_weight_path = '/media/e813/D/weights/kerash5/frcnn/TST_holy_img/'
 		self.pascal_voc_year = ['VOC2007']
 
 		self.train_path = '/home/e813/dataset/VOCdevkit_2007_trainval'
