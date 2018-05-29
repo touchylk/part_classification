@@ -247,7 +247,7 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
     out_regr = TimeDistributed(Dense(4 * (nb_classes-1), activation='linear', kernel_initializer='zero'), name='dense_regress_{}'.format(nb_classes))(out)
     return [out_class, out_regr,base_layers]
 
-def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200, trainable=False):
+def fine_layer(base_layers, input_rois, num_rois=7, nb_classes = 200):
     pooling_regions = 14
     input_shape = (num_rois, 14, 14, 1024)
     out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
@@ -273,6 +273,13 @@ def part_net(out_roi_pool, i, nb_classes= 200):
 
 def slice(x,i):
     return x[:,i,:,:,:]
+
+def fine_layer_hole(base_layers, input_rois, num_rois=1, nb_classes = 200):
+    pooling_regions = 14
+    input_shape = (num_rois, 14, 14, 1024)
+    out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
+    hole_partout = part_net(out_roi_pool, 0, nb_classes)
+    return hole_partout
 
 
 

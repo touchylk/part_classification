@@ -60,7 +60,8 @@ class Config:
 		self.pascal_voc_year = ['VOC2007']
 
 		self.train_path = '/home/e813/dataset/VOCdevkit_2007_trainval'
-		self.input_weight_path = '/media/e813/D/weights/kerash5/resnet50/resnet50_weights_tf_dim_ordering_tf_kernels.h5'
+		#self.input_weight_path = '/media/e813/D/weights/kerash5/resnet50/resnet50_weights_tf_dim_ordering_tf_kernels.h5'
+		self.input_weight_path = '/media/e813/D/weights/kerash5/frcnn/TST2/model_holyclassifier.hdf5'
 		self.output_weight_path = '/media/e813/D/weights/kerash5/frcnn/tstVOC/model_frcnn.hdf5'
 		self.config_filepath = 'config.pickle'
 		self.parser = 'pascal_voc'

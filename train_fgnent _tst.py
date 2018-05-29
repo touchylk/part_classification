@@ -106,10 +106,10 @@ shared_layers = nn.nn_base(img_input, trainable=True)  # 共享网络层的输�
 #bird_classifier_output = nn.fg_classifier(shared_layers,bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,bird_rois_input5,bird_rois_input6,nb_classes=200, trainable=True)
 holyclass_out = nn.fine_layer(shared_layers, part_roi_input,nb_classes=200)
 
-class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,nb_classes=200)
+#class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,nb_classes=200)
 
 model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
-model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
+#model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
 
 try:
     print('loading weights from {}'.format(cfg.base_net_weights))
@@ -117,7 +117,7 @@ try:
     #model_classifier.load_weights(cfg.base_net_weights, by_name=True)
     #model_birdclassifier.load_weights(cfg.base_net_weights, by_name=True)
     model_holyclassifier.load_weights(cfg.base_net_weights, by_name=True)
-    model_classifier_holyimg.load_weights(cfg.base_net_weights,by_name=True)
+    #model_classifier_holyimg.load_weights(cfg.base_net_weights,by_name=True)
 except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
@@ -127,12 +127,12 @@ lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss())
 model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
-model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentropy')
+#model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentropy')
 
 max_epoch=10
 step= 0
 while data_lei.epoch<=max_epoch:
-    img_np,boxnp, label,img_path = data_lei.next_batch(1)
+    img_np,boxnp, labellist = data_lei.next_batch(1)
     #print(img_np.shape)
     #print(boxnp.shape)
     #input_img = read_prepare_input(img_path)
@@ -143,12 +143,12 @@ while data_lei.epoch<=max_epoch:
     #print(labellist)
     #exit(4)
     #holynet_loss = model_holyclassifier.train_on_batch([img_np,boxnp],labellist)
-    holyimg_loss = model_classifier_holyimg.train_on_batch([img_np,boxnp],label)
-    predict = model_classifier_holyimg.predict([img_np,boxnp])
+    predict = model_holyclassifier.predict([img_np,boxnp])
+    outreslut = predict[1][0]
+    sortidx = np.argsort(outreslut)
+    #print()
     #predict =np.mean(predict,axis=1)
-    print(predict[0])
-    for i in range(7):
-        print(np.argmax(predict[i],axis=1))
+    print(predict[1])
     result = np.max(predict,axis=1)
     #print(predict.shape)
     #print(result)

@@ -100,9 +100,6 @@ class get_voc_label(object):
             img_input_np[n_b,:,:,:]=img_np
             #netout_width,netout_height= self.get_outputsize(width=self.input_img_size_witdth,height=self.input_img_size_heigth)
             bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
-            label = np.zeros([1,200],dtype=np.int16)
-            label[0][bird_class_label_num] = 1
-
             if 1:
                 boxlist = []
                 for i in range(self.part_num):
@@ -140,9 +137,7 @@ class get_voc_label(object):
             if self.batch_index >= self.max_batch:
                 self.batch_index = 0
                 self.epoch += 1
-            part_roi_input_holy = np.zeros([1,1,4],dtype=np.int16)
-            part_roi_input_holy[0,0,:]=np.array([0,0,netout_width-1,netout_height-1],dtype=np.int16)
-        return img_input_np,part_roi_input_holy,label,img_path #img_path,img['index']
+        return img_input_np,part_roi_input,labellist #img_path,img['index']
 
 
     def match(self,boxlist, label):
