@@ -93,7 +93,7 @@ class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,
 model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
 #model_classifier_holyimg.load_weights('/media/e813/D/weights/kerash5/resnet50/resnet50_weights_tf_dim_ordering_tf_kernels.h5',by_name=True)
 
-optimizer = Adam(lr=1e-6)
+optimizer = Adam(lr=1e-4)
 lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss())

@@ -10,5 +10,11 @@ import pickle
 
 LMD = 0.75
 
-dataset_dir = '/media/e813/E/dataset/CUBbird/CUB_200_2011/CUB_200_2011/xml'
-print(80%7)
+l = []
+a = np.zeros([3])
+for i in range(10):
+    l.append(a)
+a[0]=10
+print(l)
+print('\n')
+print(a)

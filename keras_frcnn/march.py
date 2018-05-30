@@ -84,10 +84,9 @@ class get_voc_label(object):
         netout_width, netout_height = self.get_outputsize(width=self.input_img_size_witdth, height=self.input_img_size_heigth)
         part_roi_input = np.zeros([batech_size,self.part_num,4],dtype=np.int16)
         labellist =[]
-        onelabel = np.zeros([batech_size,self.bird_class_num+1])
         label = np.zeros([batech_size, 200], dtype=np.int16)
         for nn in range(self.part_num):
-            labellist.append(onelabel)
+            labellist.append(np.zeros([batech_size,self.bird_class_num+1]))
         for n_b in range(batech_size):
             img = self.all_imgs[self.batch_index]
             while img['imageset'] != self.trainable:

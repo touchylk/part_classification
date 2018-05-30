@@ -84,9 +84,8 @@ class get_voc_label(object):
         netout_width, netout_height = self.get_outputsize(width=self.input_img_size_witdth, height=self.input_img_size_heigth)
         part_roi_input = np.zeros([batech_size,self.part_num,4],dtype=np.int16)
         labellist =[]
-        onelabel = np.zeros([batech_size,self.bird_class_num+1])
         for nn in range(self.part_num):
-            labellist.append(onelabel)
+            labellist.append(np.zeros([batech_size,self.bird_class_num+1]))
         for n_b in range(batech_size):
             img = self.all_imgs[self.batch_index]
             while img['imageset'] != self.trainable:
@@ -113,8 +112,15 @@ class get_voc_label(object):
                 assert boxnp.shape==[1,self.part_num,4]
                 assert boxnp[0,0,:]==np.array([0,0,netout_width,netout_height],dtype=np.int16)"""
             #boxnp = np.zeros([1, self.part_num, 4])
+            check_dict = {}
+            nnn = 0
             for bbox in img['bboxes']:
+                nnn+=1
                 part_index = self.class_mapping[bbox['class']]
+                if str(part_index) not in check_dict:
+                    check_dict[str(part_index)] = part_index
+                else:
+                    raise ValueError('sdff')
                 #print bbox
                 x1 = bbox['x1']
                 x2 = bbox['x2']
@@ -131,13 +137,17 @@ class get_voc_label(object):
                 if y1<0:
                     y1=0
                 part_roi_input[n_b,part_index,:] = [x1,y1,w,h]
-                labellist[part_index][n_b][bird_class_label_num] = 1
-                labellist[part_index][n_b][0] = 1
+                labellist[part_index][n_b,bird_class_label_num] = 1
+                labellist[part_index][n_b,0] = 1
+                for i in range(7):
+                    if labellist[i][n_b,0] == 1:
+                        if str(i) not in check_dict:
+                            raise ValueError(str(i)+' nnn is :'+str(nnn))
             self.batch_index += 1
             if self.batch_index >= self.max_batch:
                 self.batch_index = 0
                 self.epoch += 1
-        return img_input_np,part_roi_input,labellist,img['filepath'] #img_path,img['index']
+        return img_input_np,part_roi_input,labellist,img['filepath'],img #img_path,img['index']
 
 
     def match(self,boxlist, label):
