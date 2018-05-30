@@ -67,5 +67,6 @@ class Config:
 		self.config_filepath = 'config.pickle'
 		self.parser = 'pascal_voc'
 		self.num_epochs = 5
+		self.ori_res50_withtop = '/media/e813/D/weights/kerash5/resnet50/resnet50_weights_tf_dim_ordering_tf_kernels.h5'
 
 		# Path to training data.
