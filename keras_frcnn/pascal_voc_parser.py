@@ -17,7 +17,7 @@ def get_data(input_path,part_class_map):
 
 	visualise = False
 
-	data_path = '/media/e813/E/dataset/CUBbird/CUB_200_2011/CUB_200_2011'#[os.path.join(input_path,s) for s in cfg.pascal_voc_year]
+	data_path = '/home/e813/dataset/CUBbird/CUB_200_2011/CUB_200_2011'#[os.path.join(input_path,s) for s in cfg.pascal_voc_year]
 	
 
 	print('Parsing annotation files')

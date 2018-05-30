@@ -26,7 +26,7 @@ from keras_frcnn import march
 from keras_frcnn.pascal_voc_parser import get_data
 
 part_class_mapping={'head':0,'wings':1,'legs':2,'back':3,'belly':4,'breast':5,'tail':6}
-bird_map_path = '/media/e813/E/dataset/CUBbird/CUB_200_2011/CUB_200_2011/c.pkl'
+bird_map_path = '/home/e813/dataset/CUBbird/CUB_200_2011/CUB_200_2011/c.pkl'
 with open(bird_map_path,'r') as f:
     bird_class_mapping=pickle.load(f)
 #pprint.pprint(bird_class_mapping)
@@ -69,14 +69,14 @@ cfg.class_mapping = part_class_mapping
 
 
 print('Training images per class:')
-pprint.pprint(classes_count)
-pprint.pprint(part_class_mapping)
+#pprint.pprint(classes_count)
+#pprint.pprint(part_class_mapping)
 print('Num classes (including bg) = {}'.format(len(classes_count)))
 print('Training bird per class:')
-pprint.pprint(bird_class_count)
+#pprint.pprint(bird_class_count)
 print('total birds class is {}'.format(len(bird_class_count)))
 print('bird_class_mapping')
-pprint.pprint(bird_class_mapping)
+#pprint.pprint(bird_class_mapping)
 
 
 config_output_filename = cfg.config_filepath
@@ -110,19 +110,15 @@ class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,
 
 #model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
 model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
+#model_share = Model(img_input,shared_layers)
+#model_share.compile(optimizer='sgd',loss='mae')
+#model_share.save_weights(cfg.holy_img_weight_path+'model_holyimg'+str(11)+'.hdf5')
+epoch_start = 20
+print('loading weights from {}'.format(cfg.holy_img_weight_path+'model_holyimg'+str(epoch_start)+'.hdf5'))
 
-try:
-    print('loading weights from {}'.format(cfg.base_net_weights))
-    #model_rpn.load_weights(cfg.base_net_weights, by_name=True)
-    #model_classifier.load_weights(cfg.base_net_weights, by_name=True)
-    #model_birdclassifier.load_weights(cfg.base_net_weights, by_name=True)
-    #model_holyclassifier.load_weights(cfg.base_net_weights, by_name=True)
-    model_classifier_holyimg.load_weights(cfg.base_net_weights,by_name=True)
-except:
-    print('Could not load pretrained model weights. Weights can be found in the keras application folder \
-		https://github.com/fchollet/keras/tree/master/keras/applications')
-    raise ValueError('load wrong')
-optimizer = Adam(lr=1e-5)
+model_classifier_holyimg.load_weights(cfg.holy_img_weight_path+'model_holyimg'+str(epoch_start)+'.hdf5')
+
+optimizer = Adam(lr=1e-6)
 lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss())
@@ -131,8 +127,9 @@ model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentr
 
 max_epoch=10
 step= 0
-now_epoch = 0
-while data_lei.epoch<=max_epoch:
+now_epoch = epoch_start
+data_lei.epoch = epoch_start
+while 1:
     step+=1
     img_np,boxnp, label,img_path = data_lei.next_batch(1)
     #print(img_np.shape)
@@ -164,9 +161,11 @@ while data_lei.epoch<=max_epoch:
     print('step is {} batch_index is {} and epoch is {}'.format(step,data_lei.batch_index,data_lei.epoch))
 
     if data_lei.epoch!= now_epoch:
-        model_classifier_holyimg.save_weights(cfg.holy_img_weight_path+'model_holyimg'+str(data_lei.epoch)+'.hdf5')
+        if data_lei.epoch%2 ==0:
+            model_classifier_holyimg.save_weights(cfg.holy_img_weight_path+'model_holyimg'+str(data_lei.epoch)+'.hdf5')
         now_epoch = data_lei.epoch
-    if data_lei.epoch == 5:
+    if data_lei.epoch == 60:
+        print('train done! 呵呵')
         break
     #print(holynet_loss)
 

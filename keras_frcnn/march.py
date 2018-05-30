@@ -85,6 +85,7 @@ class get_voc_label(object):
         part_roi_input = np.zeros([batech_size,self.part_num,4],dtype=np.int16)
         labellist =[]
         onelabel = np.zeros([batech_size,self.bird_class_num+1])
+        label = np.zeros([batech_size, 200], dtype=np.int16)
         for nn in range(self.part_num):
             labellist.append(onelabel)
         for n_b in range(batech_size):
@@ -100,8 +101,8 @@ class get_voc_label(object):
             img_input_np[n_b,:,:,:]=img_np
             #netout_width,netout_height= self.get_outputsize(width=self.input_img_size_witdth,height=self.input_img_size_heigth)
             bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]-1
-            label = np.zeros([1,200],dtype=np.int16)
-            label[0][bird_class_label_num] = 1
+
+            label[n_b][bird_class_label_num] = 1
 
             if 1:
                 boxlist = []

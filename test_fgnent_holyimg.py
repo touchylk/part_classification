@@ -26,7 +26,7 @@ from keras_frcnn import march
 from keras_frcnn.pascal_voc_parser import get_data
 
 part_class_mapping={'head':0,'wings':1,'legs':2,'back':3,'belly':4,'breast':5,'tail':6}
-bird_map_path = '/media/e813/E/dataset/CUBbird/CUB_200_2011/CUB_200_2011/c.pkl'
+bird_map_path = '/home/e813/dataset/CUBbird/CUB_200_2011/CUB_200_2011/c.pkl'
 with open(bird_map_path,'r') as f:
     bird_class_mapping=pickle.load(f)
 #pprint.pprint(bird_class_mapping)
@@ -57,7 +57,7 @@ else:
     #raise ValueError
 
 all_imgs, classes_count, bird_class_count = get_data(cfg.train_path,part_class_mapping)
-data_lei = march.get_voc_label(all_imgs, classes_count, part_class_mapping, bird_class_count, bird_class_mapping,config= cfg,trainable=True)
+data_lei = march.get_voc_label(all_imgs, classes_count, part_class_mapping, bird_class_count, bird_class_mapping,config= cfg,trainable=False)
 #pprint.pprint(classes_count)
 #pprint.pprint(part_class_mapping)
 # 这里的类在match里边定义
@@ -104,20 +104,20 @@ part_roi_input = Input(shape=[None,4])
 # define the base network (resnet here, can be VGG, Inception, etc)
 shared_layers = nn.nn_base(img_input, trainable=True)  # 共享网络层的输出.要明确输出的size
 #bird_classifier_output = nn.fg_classifier(shared_layers,bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,bird_rois_input5,bird_rois_input6,nb_classes=200, trainable=True)
-holyclass_out = nn.fine_layer(shared_layers, part_roi_input,nb_classes=200)
+#holyclass_out = nn.fine_layer(shared_layers, part_roi_input,nb_classes=200)
 
 class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,nb_classes=200)
 
-model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
+#model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
 model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
 
 try:
-    print('loading weights from {}'.format(cfg.holy_img_weight_path+'model_holyimg'+str(3)+'.hdf5'))
+    #print('loading weights from {}'.format(cfg.holy_img_weight_path+'model_holyimg'+str(4)+'.hdf5'))
     #model_rpn.load_weights(cfg.base_net_weights, by_name=True)
     #model_classifier.load_weights(cfg.base_net_weights, by_name=True)
     #model_birdclassifier.load_weights(cfg.base_net_weights, by_name=True)
-    model_holyclassifier.load_weights(cfg.base_net_weights, by_name=True)
-    model_classifier_holyimg.load_weights(cfg.base_net_weights,by_name=True)
+    #model_holyclassifier.load_weights(cfg.base_net_weights, by_name=True)
+    model_classifier_holyimg.load_weights(cfg.holy_img_weight_path+'model_holyimg'+str(19)+'.hdf5',by_name=True)
 except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
@@ -126,13 +126,15 @@ optimizer = Adam(lr=1e-5)
 lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss())
-model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
-model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentropy',metrics='')
+#model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
+model_classifier_holyimg.compile(optimizer=optimizer,loss='categorical_crossentropy')
 
 max_epoch=10
 step= 0
 now_epoch = 0
-while data_lei.epoch<=max_epoch:
+true_s = 0
+false_s = 0
+while 1:
     step+=1
     img_np,boxnp, label,img_path = data_lei.next_batch(1)
     #print(img_np.shape)
@@ -145,8 +147,17 @@ while data_lei.epoch<=max_epoch:
     #print(labellist)
     #exit(4)
     #holynet_loss = model_holyclassifier.train_on_batch([img_np,boxnp],labellist)
-    holyimg_loss = model_classifier_holyimg.train_on_batch([img_np,boxnp],label)
-    print(holyimg_loss)
+    #holyimg_loss = model_classifier_holyimg.train_on_batch([img_np,boxnp],label)
+    pre_out = model_classifier_holyimg.predict([img_np,boxnp])
+    pre_out = pre_out[0]
+    pre_idx = np.argmax(pre_out)
+    true_idx  = np.argmax(label[0])
+    if pre_idx==true_idx:
+        true_s+=1
+    else:
+        false_s+=1
+        #print(false_s)
+
     #predict = model_classifier_holyimg.predict([img_np,boxnp])
     #predict =np.mean(predict,axis=1)
     #print(predict[0])
@@ -161,13 +172,13 @@ while data_lei.epoch<=max_epoch:
     #print(holynet_loss)
     #exit()
     #print(boxnp)
-    print('step is {} batch_index is {} and epoch is {}'.format(step,data_lei.batch_index,data_lei.epoch))
+    #print('step is {} batch_index is {} and epoch is {}'.format(step,data_lei.batch_index,data_lei.epoch))
 
     if data_lei.epoch!= now_epoch:
-        model_classifier_holyimg.save_weights(cfg.holy_img_weight_path+'model_holyimg'+str(data_lei.epoch)+'.hdf5')
+        #model_classifier_holyimg.save_weights(cfg.holy_img_weight_path+'model_holyimg'+str(data_lei.epoch)+'.hdf5')
         now_epoch = data_lei.epoch
-    if data_lei.epoch == 5:
         break
+print(true_s/(true_s+false_s))
     #print(holynet_loss)
 
 

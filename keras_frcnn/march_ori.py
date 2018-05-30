@@ -137,7 +137,7 @@ class get_voc_label(object):
             if self.batch_index >= self.max_batch:
                 self.batch_index = 0
                 self.epoch += 1
-        return img_input_np,part_roi_input,labellist #img_path,img['index']
+        return img_input_np,part_roi_input,labellist,img['filepath'] #img_path,img['index']
 
 
     def match(self,boxlist, label):
