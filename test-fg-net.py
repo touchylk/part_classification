@@ -50,7 +50,7 @@ else:
     print('Not a valid model')
     raise ValueError
 
-cfg.base_net_weights = cfg.ori_res50_withtop
+#cfg.base_net_weights = cfg.ori_res50_withtop
 
 all_imgs, classes_count, bird_class_count = get_data(cfg.train_path,part_class_mapping)
 data_lei = march.get_voc_label(all_imgs, classes_count, part_class_mapping, bird_class_count, bird_class_mapping,config= cfg,trainable=True)
@@ -106,10 +106,7 @@ class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,
 
 model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
 #model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
-
-start_epoch = 8
-
-cfg.base_net_weights = '/media/e813/D/weights/kerash5/frcnn/TST_holy_img/model_part{}.hdf5'.format(start_epoch)
+cfg.base_net_weights = '/media/e813/D/weights/kerash5/frcnn/TST_holy_img/model_part{}.hdf5'.format(8)
 try:
     print('loading weights from {}'.format(cfg.base_net_weights))
     #model_rpn.load_weights(cfg.base_net_weights, by_name=True)
@@ -130,11 +127,12 @@ model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 
 max_epoch=32
 step= 0
-now_epoch = start_epoch
-data_lei.epoch = start_epoch
+now_epoch = 0
+tru_s=np.zeros([7],dtype=np.int16)
+fal_s=np.zeros([7],dtype=np.int16)
 while 1:
     step+=1
-    img_np,boxnp, label,img_path = data_lei.next_batch(1)
+    img_np,boxnp, labellist,img_path = data_lei.next_batch(1)
     #print(img_np.shape)
     #print(boxnp.shape)
     #input_img = read_prepare_input(img_path)
@@ -145,8 +143,18 @@ while 1:
     #print(labellist)
     #exit(4)
     #holynet_loss = model_holyclassifier.train_on_batch([img_np,boxnp],labellist)
-    holynet_loss = model_holyclassifier.train_on_batch([img_np,boxnp],label)
-    predict = model_holyclassifier.predict([img_np,boxnp])
+    netoutput = model_holyclassifier.predict_on_batch([img_np,boxnp])
+
+    for i in range(7):
+        net_predict = netoutput[i][0,:]
+        label = labellist[i][0,1:]
+        pre_idx = np.argmax(net_predict)
+        lab_idx = np.argmax(label)
+        if pre_idx ==lab_idx:
+            tru_s[i]+=1
+        else:
+            fal_s[i]+=1
+    #predict = model_holyclassifier.predict([img_np,boxnp])
     #predict =np.mean(predict,axis=1)
     #print(predict[0])
     #for i in range(7):
@@ -163,15 +171,13 @@ while 1:
     #exit()
     #print(boxnp)
     print('step is {} batch_index is {} and epoch is {}'.format(step,data_lei.batch_index,data_lei.epoch))
-    print(holynet_loss)
     #print(holynet_loss)
     if data_lei.epoch!= now_epoch:
-        if data_lei.epoch%4 ==0:
-            model_holyclassifier.save_weights(cfg.holy_img_weight_path+'model_part'+str(data_lei.epoch)+'.hdf5')
-        now_epoch = data_lei.epoch
-    if data_lei.epoch == max_epoch:
+        arc = np.zeros([7],dtype=np.float32)
+        for j in range(7):
+            arc[j]= float(tru_s[j])/float(tru_s[j]+fal_s[j])
+        print(arc)
+        break
+    if data_lei.epoch == 10:
         print('train done! 呵呵')
         break
-
-
-
