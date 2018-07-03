@@ -266,6 +266,7 @@ def part_net(out_roi_pool, i, nb_classes= 200):
     out = MaxPooling2D((2, 2), strides=(2, 2))(x)
     out = conv_block(out, 3, [256, 256, 1024], stage=5, block='a'+str(i),  strides=(1, 1), trainable=True)
     out = identity_block(out,3, [256,256,1024],stage=5,block='b'+str(i),trainable=True)
+    #out = identity_block(out, 3, [256, 256, 1024], stage=5, block='c'+str(i), trainable=True)
     out = AveragePooling2D((7, 7))(out)
     out = Flatten()(out)
     out = Dense(nb_classes, activation='softmax', kernel_initializer='zero',name='dense_class'+str(i),trainable=True)(out)
@@ -337,13 +338,67 @@ def res50ori(input_tensor=None,nb_classes=200, trainable=False):
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f', trainable = trainable)
     # 看一下网络输出的形状.网络输出的形状是(1, 38, 56, 1024)
 
-    x = conv_block(x, 3, [512, 512, 2048], stage=5, block='a')
-    x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b')
-    x = identity_block(x, 3, [512, 512, 2048], stage=5, block='c')
+    x = conv_block(x, 3, [512, 512, 2048], stage=5, block='a',trainable=trainable)
+    x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b',trainable=trainable)
+    x = identity_block(x, 3, [512, 512, 2048], stage=5, block='c',trainable=trainable)
 
-    x = AveragePooling2D((7, 7), name='avg_pool')(x)
+    x = AveragePooling2D((7, 7), name='avg_pool',trainable=trainable)(x)
     x = Flatten()(x)
-    x = Dense(nb_classes, activation='softmax', name='fc200')(x)
+    x = Dense(nb_classes, activation='softmax', name='fc200',trainable=trainable)(x)
+    return x
+
+def res26(input_tensor=None,nb_classes=200, trainable=False):
+
+    # Determine proper input shape
+    if K.image_dim_ordering() == 'th':
+        input_shape = (3, None, None)
+    else:
+        input_shape = (None, None, 3)
+
+    if input_tensor is None:
+        img_input = Input(shape=input_shape)
+    else:
+        if not K.is_keras_tensor(input_tensor):
+            img_input = Input(tensor=input_tensor, shape=input_shape)
+        else:
+            img_input = input_tensor
+
+    if K.image_dim_ordering() == 'tf':
+        bn_axis = 3
+    else:
+        bn_axis = 1
+
+    x = ZeroPadding2D((3, 3))(img_input)
+
+    x = Convolution2D(64, (7, 7), strides=(2, 2), name='conv1', trainable = trainable)(x)
+    x = FixedBatchNormalization(axis=bn_axis, name='bn_conv1')(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((3, 3), strides=(2, 2))(x)
+
+    x = conv_block(x, 3, [64, 64, 256], stage=2, block='a', strides=(1, 1), trainable = trainable)
+    x = identity_block(x, 3, [64, 64, 256], stage=2, block='b', trainable = trainable)
+    x = identity_block(x, 3, [64, 64, 256], stage=2, block='c', trainable = trainable)
+
+    x = conv_block(x, 3, [128, 128, 512], stage=3, block='a', trainable = trainable)
+    x = identity_block(x, 3, [128, 128, 512], stage=3, block='b', trainable = trainable)
+    x = identity_block(x, 3, [128, 128, 512], stage=3, block='c', trainable = trainable)
+    x = identity_block(x, 3, [128, 128, 512], stage=3, block='d', trainable = trainable)
+
+    x = conv_block(x, 3, [256, 256, 1024], stage=4, block='a', trainable = trainable)
+    #x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b', trainable = trainable)
+    #x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c', trainable = trainable)
+    #x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d', trainable = trainable)
+    #x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e', trainable = trainable)
+    #x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f', trainable = trainable)
+    #看一下网络输出的形状.网络输出的形状是(1, 38, 56, 1024)
+
+    # x = conv_block(x, 3, [512, 512, 2048], stage=5, block='a',trainable=trainable)
+    # x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b',trainable=trainable)
+    # x = identity_block(x, 3, [512, 512, 2048], stage=5, block='c',trainable=trainable)
+
+    x = AveragePooling2D((14, 14), name='avg_pool',trainable=trainable)(x)
+    x = Flatten()(x)
+    x = Dense(nb_classes, activation='softmax', name='fc200',trainable=trainable)(x)
     return x
 
 def fg_classifier(base_layers, input_rois, num_rois = 7, nb_classes = 10, trainable=False):

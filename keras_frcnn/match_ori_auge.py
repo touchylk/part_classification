@@ -6,6 +6,9 @@ import math
 from . import data_generators
 import copy
 import cv2
+import random
+import keras
+
 class_num =200
 part_map_num = {'head':0,'legs':1,'wings':2,'back':3,'belly':4,'breast':5,'tail':6}
 part_map_name = {}
@@ -30,8 +33,8 @@ class get_voc_label(object):
         self.bird_class_num = len(bird_classes_count)
         self.net_size = [38,56]
         self.C =config
-        self.input_img_size_witdth = 600
-        self.input_img_size_heigth = 600
+        self.input_img_size_witdth = 300
+        self.input_img_size_heigth = 300
         if self.C.network=='resnet50':
             self.get_outputsize =self.get_img_output_length_res50
         elif self.C.network=='vgg':
@@ -43,7 +46,7 @@ class get_voc_label(object):
         else:
             self.trainable = 'test'
 
-    def get_next_batch(self):
+    '''def get_next_batch(self):
         img = self.all_imgs[self.batch_index]
         while img['imageset']!= self.trainable:
             self.batch_index+=1
@@ -78,12 +81,13 @@ class get_voc_label(object):
         if self.batch_index >= self.max_batch:
             self.batch_index = 0
             self.epoch += 1
-        return img_path,boxdict,labellist,labelnpout
+        return img_path,boxdict,labellist,labelnpout'''
     def next_batch(self,batech_size):
-        img_input_np= np.zeros([batech_size,self.input_img_size_heigth,self.input_img_size_witdth,3])
+        img_input_np = np.zeros([batech_size,self.input_img_size_heigth,self.input_img_size_witdth,3])
         netout_width, netout_height = self.get_outputsize(width=self.input_img_size_witdth, height=self.input_img_size_heigth)
         part_roi_input = np.zeros([batech_size,self.part_num,4],dtype=np.int16)
         labellist =[]
+        label_res_np = np.zeros([batech_size, 200], dtype=np.int16)
         for nn in range(self.part_num):
             labellist.append(np.zeros([batech_size,self.bird_class_num+1]))
         for n_b in range(batech_size):
@@ -95,10 +99,15 @@ class get_voc_label(object):
                     self.epoch += 1
                 img = self.all_imgs[self.batch_index]
             img_path = img['filepath']
-            img_np = self.read_prepare_img(img_path,img['width'],img['height'],width_to_resize=self.input_img_size_witdth,heigth_to_resize=self.input_img_size_heigth)
+            #img_np = self.read_prepare_img(img_path,img['width'],img['height'],width_to_resize=self.input_img_size_witdth,heigth_to_resize=self.input_img_size_heigth)
+
+            img_np,img_ori= self.read_prepare_img_aug(img_path, img['width'], img['height'],
+                                                        width_to_resize=self.input_img_size_witdth,
+                                                        heigth_to_resize=self.input_img_size_heigth, annota=img)
             img_input_np[n_b,:,:,:]=img_np
             #netout_width,netout_height= self.get_outputsize(width=self.input_img_size_witdth,height=self.input_img_size_heigth)
             bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
+            label_res_np[n_b, :] = keras.utils.to_categorical(bird_class_label_num - 1, 200)
             if 1:
                 boxlist = []
                 for i in range(self.part_num):
@@ -147,7 +156,39 @@ class get_voc_label(object):
             if self.batch_index >= self.max_batch:
                 self.batch_index = 0
                 self.epoch += 1
-        return img_input_np,part_roi_input,labellist,img['filepath'] #img_path,img['index']
+        return img_input_np,part_roi_input,labellist
+
+    def     next_batch_only_part(self,batech_size):
+        img_input_np = np.zeros([batech_size,self.input_img_size_heigth,self.input_img_size_witdth,3],dtype=np.uint8)
+        label_res_np = np.zeros([batech_size, 200], dtype=np.int16)
+        for n_b in range(batech_size):
+            img = self.all_imgs[self.batch_index]
+            img_path = img['filepath']
+            ret,img_np = self.read_part_ori_auge(img_path, img['width'], img['height'],
+                                             width_to_resize=self.input_img_size_witdth,
+                                             heigth_to_resize=self.input_img_size_heigth, annota=img)
+            while img['imageset'] != self.trainable or not ret:
+                self.batch_index += 1
+                if self.batch_index >= self.max_batch:
+                    self.batch_index = 0
+                    self.epoch += 1
+                img = self.all_imgs[self.batch_index]
+                img_path = img['filepath']
+                ret,img_np = self.read_part_ori_auge(img_path, img['width'], img['height'],
+                                                            width_to_resize=self.input_img_size_witdth,
+                                                            heigth_to_resize=self.input_img_size_heigth, annota=img)
+            #img_np = self.read_prepare_img(img_path,img['width'],img['height'],width_to_resize=self.input_img_size_witdth,heigth_to_resize=self.input_img_size_heigth)
+
+            img_input_np[n_b,:,:,:]=img_np
+            #print img['filepath'],img['index']
+            #netout_width,netout_height= self.get_outputsize(width=self.input_img_size_witdth,height=self.input_img_size_heigth)
+            bird_class_label_num = self.bird_class_mapping[img['bird_class_name']]
+            label_res_np[n_b, :] = keras.utils.to_categorical(bird_class_label_num - 1, 200)
+            self.batch_index += 1
+            if self.batch_index >= self.max_batch:
+                self.batch_index = 0
+                self.epoch += 1
+        return img_input_np,label_res_np,img['index']
 
 
     def match(self,boxlist, label):
@@ -206,8 +247,105 @@ class get_voc_label(object):
         img = np.transpose(img, (2, 0, 1))
         img = np.expand_dims(img, axis=0)
         img = np.transpose(img, (0, 2, 3, 1))
-
         return img
+
+    def read_prepare_img_aug(self,img_path,width,height,width_to_resize,heigth_to_resize,annota):
+        img_np = cv2.imread(img_path)
+        if annota['aug']:
+            if annota['aug_med'] == 'flip_hor':
+                img_np = cv2.flip(img_np,1)
+            elif annota['aug_med'] == 'cut':
+                tscut_pix = annota['cut_pixes']
+                if annota['cut_type'] == 'both':
+                    img_np = img_np[tscut_pix:-tscut_pix, tscut_pix:-tscut_pix, :]
+                elif annota['cut_type'] == 'width':
+                    img_np = img_np[:, tscut_pix:-tscut_pix, :]
+                elif annota['cut_type'] == 'height':
+                    img_np = img_np[tscut_pix:-tscut_pix, :, :]
+            elif annota['aug_med'] == 'hsv':
+                hue = annota['hsv_hue']
+                sat = annota['hsv_sat']
+                val = annota['hsv_val']
+                img_hsv = cv2.cvtColor(img_np, cv2.COLOR_BGR2HSV).astype(np.float)
+                img_hsv[:, :, 0] = (img_hsv[:, :, 0] + hue) % 180
+                img_hsv[:, :, 1] *= sat
+                img_hsv[:, :, 2] *= val
+                img_hsv[img_hsv > 255] = 255
+                img_np = cv2.cvtColor(np.round(img_hsv).astype(np.uint8), cv2.COLOR_HSV2BGR)
+        img_ori =np.copy(img_np)# 展示
+        assert width==img_np.shape[1]
+        assert height==img_np.shape[0]
+        #resized_width, resized_height=self.get_new_img_size(width,height)
+        img_np = cv2.resize(img_np, (width_to_resize, heigth_to_resize), interpolation=cv2.INTER_CUBIC)
+        #return True,img_np
+        size =[heigth_to_resize, heigth_to_resize]
+        img_np = img_np[:, :, (2, 1, 0)]  # BGR -> RGB
+        img_np = img_np.astype(np.float32)
+        img_np[:, :, 0] -= self.C.img_channel_mean[0]
+        img_np[:, :, 1] -= self.C.img_channel_mean[1]
+        img_np[:, :, 2] -= self.C.img_channel_mean[2]
+        img_np /= self.C.img_scaling_factor
+
+        img_np = np.transpose(img_np, (2, 0, 1))
+        img_np = np.expand_dims(img_np, axis=0)
+        img_np = np.transpose(img_np, (0, 2, 3, 1))
+
+        return img_np, img_ori #展示
+    def read_part_ori_auge(self,img_path,width,height,width_to_resize,heigth_to_resize,annota):
+        partname = self.C.part_name
+        img = cv2.imread(img_path)
+        if annota['aug']:
+            if annota['aug_med'] == 'flip_hor':
+                img = cv2.flip(img, 1)
+            elif annota['aug_med'] == 'hsv':
+                hue = annota['hsv_hue']
+                sat = annota['hsv_sat']
+                val = annota['hsv_val']
+                img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float)
+                img_hsv[:, :, 0] = (img_hsv[:, :, 0] + hue) % 180
+                img_hsv[:, :, 1] *= sat
+                img_hsv[:, :, 2] *= val
+                img_hsv[img_hsv > 255] = 255
+                img = cv2.cvtColor(np.round(img_hsv).astype(np.uint8), cv2.COLOR_HSV2BGR)
+            elif annota['aug_med'] == 'gamma':
+                gamma_aft_exp = annota['gamma_aft_exp']
+                img = self.gamma_transform(img, gamma_aft_exp)
+        assert width == img.shape[1]
+        assert height == img.shape[0]
+        flag = False
+        for box in annota['bboxes']:
+            if box['class']==partname:
+                img_onepart = img[int(box['y1']):int(box['y2']),int(box['x1']):int(box['x2']),:]
+                img_onepart.astype(np.uint8)
+                # print(img_onepart.shape,img[int(box['y1']):int(box['y2']),int(box['x1']):int(box['x2']),:].shape,int(box['y1']),int(box['y2']),int(box['x1']),int(box['x2']))
+                flag=True
+        if not flag:
+            return False,None
+
+
+        img_onepart = cv2.resize(img_onepart, (width_to_resize, heigth_to_resize), interpolation=cv2.INTER_CUBIC)
+
+        #return True,img_onepart
+        size = [heigth_to_resize, heigth_to_resize]
+        img_onepart = img_onepart[:, :, (2, 1, 0)]  # BGR -> RGB
+        img_onepart = img_onepart.astype(np.float32)
+        img_onepart[:, :, 0] -= self.C.img_channel_mean[0]
+        img_onepart[:, :, 1] -= self.C.img_channel_mean[1]
+        img_onepart[:, :, 2] -= self.C.img_channel_mean[2]
+        img_onepart /= self.C.img_scaling_factor
+
+        img_onepart = np.transpose(img_onepart, (2, 0, 1))
+        img_onepart = np.expand_dims(img_onepart, axis=0)
+        img_onepart = np.transpose(img_onepart, (0, 2, 3, 1))
+        return True,img_onepart
+
+    def hsv_transform(self,img, hue_delta, sat_mult, val_mult):
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float)
+        img_hsv[:, :, 0] = (img_hsv[:, :, 0] + hue_delta) % 180
+        img_hsv[:, :, 1] *= sat_mult
+        img_hsv[:, :, 2] *= val_mult
+        img_hsv[img_hsv > 255] = 255
+        return cv2.cvtColor(np.round(img_hsv).astype(np.uint8), cv2.COLOR_HSV2BGR)
 
     def get_new_img_size(self,width, height, img_min_side=600):
         if width <= height:
@@ -239,6 +377,14 @@ class get_voc_label(object):
             return input_length // 16
 
         return get_output_length(width), get_output_length(height)
+
+    def shuffle_allimgs(self):
+        random.shuffle(self.all_imgs)
+
+    def gamma_transform(self, img, gamma):
+        gamma_table = [np.power(x / 255.0, gamma) * 255.0 for x in range(256)]
+        gamma_table = np.round(np.array(gamma_table)).astype(np.uint8)
+        return cv2.LUT(img, gamma_table)
 
 
 

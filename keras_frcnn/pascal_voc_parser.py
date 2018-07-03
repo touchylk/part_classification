@@ -26,7 +26,7 @@ def get_data(input_path,part_class_map):
 
 		annot_path = os.path.join(data_path, 'xml')
 		imgs_path = os.path.join(data_path, 'images')
-		imgsets_path_trainval = os.path.join(data_path, 'train.txt')
+		'''imgsets_path_trainval = os.path.join(data_path, 'train.txt')
 		imgsets_path_test = os.path.join(data_path, 'test.txt')
 
 		trainval_files = []
@@ -47,7 +47,7 @@ def get_data(input_path,part_class_map):
 				# this is expected, most pascal voc distibutions dont have the test.txt file
 				pass
 			else:
-				print(e)
+				print(e)'''
 		
 		annots = [os.path.join(annot_path, s) for s in os.listdir(annot_path)]
 		idx = 0

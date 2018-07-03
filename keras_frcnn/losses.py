@@ -75,7 +75,7 @@ def class_loss_cls(y_true, y_pred):
 #在train里边要传的是1,200+，在这里里边同样是1,，200+
 def holy_loss():
 	def holy_loss_fixed_num(y_true,y_pred):
-		return y_true[:,0]* K.mean(categorical_crossentropy(y_pred[:,:],y_true[:,1:]))
+		return y_true[:,0]* K.mean(categorical_crossentropy(y_true[:,1:],y_pred[:,:]))
 	return holy_loss_fixed_num
 
 #[head_classifier,legs_classifier,wings_classifier,back_classifier,belly_classifier,breast_classifier,tail_classifier]

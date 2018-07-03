@@ -19,8 +19,9 @@ from keras_frcnn import config, data_generators
 from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
-from keras_frcnn import march_ori as march
-
+from keras_frcnn import march as march
+from keras.models import load_model
+#from keras_frcnn.FixedBatchNormalization import FixedBatchNormalization
 
 
 from keras_frcnn.pascal_voc_parser import get_data
@@ -38,22 +39,13 @@ os.environ['CUDA_VISIBLE_DEVICES']= '1'
 cfg = config.Config()
 sys.setrecursionlimit(40000)
 
-
-if cfg.network == 'vgg':
-    # cfg.network = 'vgg'
-    from keras_frcnn import vgg as nn
-    print('use vgg')
-elif cfg.network == 'resnet50':
-    from keras_frcnn import resnet as nn
-    print('use resnet50')
-else:
-    print('Not a valid model')
-    raise ValueError
+from keras_frcnn import resnet as nn
 
 cfg.base_net_weights = cfg.ori_res50_withtop
 
 all_imgs, classes_count, bird_class_count = get_data(cfg.train_path,part_class_mapping)
 data_lei = march.get_voc_label(all_imgs, classes_count, part_class_mapping, bird_class_count, bird_class_mapping,config= cfg,trainable=True)
+#data_lei.shuffle_allimgs()
 #pprint.pprint(classes_count)
 #pprint.pprint(part_class_mapping)
 # 这里的类在match里边定义
@@ -94,6 +86,7 @@ print('Num val samples {}'.format(len(val_imgs)))
 input_shape_img = (None, None, 3)
 
 img_input = Input(shape=input_shape_img)
+
 #roi_input = Input(shape=(None, 4))  # roiinput是什么,要去看看清楚
 part_roi_input = Input(shape=[None,4])
 
@@ -102,14 +95,18 @@ shared_layers = nn.nn_base(img_input, trainable=True)  # 共享网络层的输�
 #bird_classifier_output = nn.fg_classifier(shared_layers,bird_rois_input0,bird_rois_input1,bird_rois_input2,bird_rois_input3,bird_rois_input4,bird_rois_input5,bird_rois_input6,nb_classes=200, trainable=True)
 holyclass_out = nn.fine_layer(shared_layers, part_roi_input,nb_classes=200)
 
-class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,nb_classes=200)
+#class_holyimg_out = nn.fine_layer_hole(shared_layers, part_roi_input,num_rois=1,nb_classes=200)
 
 model_holyclassifier = Model([img_input,part_roi_input],holyclass_out)
 #model_classifier_holyimg = Model([img_input,part_roi_input],class_holyimg_out)
 
-start_epoch = 8
+start_epoch = 10
+restart =False
 
 cfg.base_net_weights = '/media/e813/D/weights/kerash5/frcnn/TST_holy_img/model_part{}.hdf5'.format(start_epoch)
+#cfg.base_net_weights =cfg.weigth_to_save_load(start_epoch)
+cfg.base_net_weights =cfg.ori_res50_withtop
+cfg.base_net_weights =cfg.weigth_to_save_load(start_epoch)
 try:
     print('loading weights from {}'.format(cfg.base_net_weights))
     #model_rpn.load_weights(cfg.base_net_weights, by_name=True)
@@ -121,20 +118,26 @@ except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
     raise ValueError('load wrong')
-optimizer = Adam(lr=1e-5)
+optimizer = Adam(lr=3e-5)
 lossfn_list =[]
 for i in range(7):
     lossfn_list.append(losses.holy_loss())
 model_holyclassifier.compile(optimizer=optimizer,loss=lossfn_list)
 #model_classifier_holyimg.compile(optimizer=optimizer,loss=lossfn_list)
-
-max_epoch=32
+if not restart:
+    model_holyclassifier.save(cfg.model_to_save_load(0))
+    model_holyclassifier.save_weights(cfg.weigth_to_save_load(0))
+else:
+    print('restart model!!!')
+    del model_holyclassifier
+    model_holyclassifier = load_model(cfg.model_to_save_load(10))
+max_epoch= 50
 step= 0
 now_epoch = start_epoch
 data_lei.epoch = start_epoch
 while 1:
     step+=1
-    img_np,boxnp, label,img_path = data_lei.next_batch(1)
+    img_np,boxnp, label= data_lei.next_batch(1)
     #print(img_np.shape)
     #print(boxnp.shape)
     #input_img = read_prepare_input(img_path)
@@ -166,9 +169,11 @@ while 1:
     print(holynet_loss)
     #print(holynet_loss)
     if data_lei.epoch!= now_epoch:
-        if data_lei.epoch%4 ==0:
-            model_holyclassifier.save_weights(cfg.holy_img_weight_path+'model_part'+str(data_lei.epoch)+'.hdf5')
+        if data_lei.epoch%1 ==0:
+            model_holyclassifier.save(cfg.weigth_to_save_load(data_lei.epoch))
+            model_holyclassifier.save(cfg.model_to_save_load(data_lei.epoch))
         now_epoch = data_lei.epoch
+        data_lei.shuffle_allimgs()
     if data_lei.epoch == max_epoch:
         print('train done! 呵呵')
         break

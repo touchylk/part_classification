@@ -57,7 +57,7 @@ class Config:
 		# https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5
 
 		self.model_path = '/media/e813/D/weights/kerash5/frcnn/TST2/model_frcnn.vgg.hdf5'#'model_frcnn.vgg.hdf5'
-		self.holy_img_weight_path = '/media/e813/D/weights/kerash5/frcnn/TST_holy_img/'
+		self.holy_img_weight_path = '/media/e813/D/weights/kerash5/cac/xunlian_ori/'
 		self.pascal_voc_year = ['VOC2007']
 
 		self.train_path = '/home/e813/dataset/VOCdevkit_2007_trainval'
@@ -68,5 +68,36 @@ class Config:
 		self.parser = 'pascal_voc'
 		self.num_epochs = 5
 		self.ori_res50_withtop = '/media/e813/D/weights/kerash5/resnet50/resnet50_weights_tf_dim_ordering_tf_kernels.h5'
+		self.part_name = 'tail'
 
+	def result_to_save(self):
+		return '/media/e813/D/weights/kerash5/cac/part_res/{}/result.pkl'.format(self.part_name)
 		# Path to training data.
+	def weigth_to_save_load(self, nums):
+		a = '/media/e813/D/weights/kerash5/cac/part_res/back'
+		return '/media/e813/D/weights/kerash5/cac/part_res_cut/{}/weight_cut{}.hdf5'.format(self.part_name,nums)
+
+	def model_to_save_load(self, nums):
+		return '/media/e813/D/weights/kerash5/cac/res_ori614/model_{}.hdf5'.format(nums)
+
+	def date_augment_cfg(self,trainable):
+		self.trainable = trainable
+		augment = {}
+		augment['flip_hor'] = True
+		augment['cut'] = True
+		augment['hsv'] = True
+		augment['rot'] = False
+		augment['gamma'] = True
+		if augment['hsv']:
+			self.hsv_hue_v = 10
+			self.hsv_sat_v = 0.1
+			self.hsv_val_v = 0.1
+		if augment['cut']:
+			self.cut_max = 6
+			self.cut_min = 3
+		if augment['rot']:
+			self.rot_angle_v = 10
+		if augment['gamma']:
+			self.gamma_v = 1.0
+			pass
+		self.aug_cfg = augment
